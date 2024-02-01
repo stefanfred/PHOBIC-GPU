@@ -1,0 +1,98 @@
+#version 450
+
+
+#define NUM_BANKS			32
+#define CONFLICT_FREE_OFFSET(n)  ((n) / NUM_BANKS + (n))
+
+
+layout(local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+
+layout(push_constant) uniform PushStruct {
+    uint size;
+} p;
+
+layout(binding = 0) buffer inoutBufer {uint array[];};
+layout(binding = 1) buffer offsetBufer {uint higherLevelArray[];};
+
+
+shared uint[CONFLICT_FREE_OFFSET(2 * gl_WorkGroupSize.x)] shared_ints;
+
+
+void main() 
+{
+    uint localSize = 2 * gl_WorkGroupSize.x;
+    uint halfsize = localSize / 2;
+    uint lID = gl_LocalInvocationID.x;
+    // reversed index for convenience
+    uint rlID = halfsize - gl_LocalInvocationID.x - 1;
+    uint gID = gl_GlobalInvocationID.x;
+
+    if (rlID < 0) {
+        // thread is out of bounds
+        return;
+    }
+    
+    // Cache first half of elements in the local memory
+    shared_ints[CONFLICT_FREE_OFFSET(lID * 2)] = array[gID * 2];
+	// Cache second half of elements
+    shared_ints[CONFLICT_FREE_OFFSET(lID * 2 + 1)] = array[gID * 2 + 1];
+
+	// Perform up-sweep
+    uint stride = 1;
+    // loop until all reductions are performed
+    while(stride <= halfsize) {
+        // threads that participate in this reduction step
+        if (rlID % stride == 0) {
+            shared_ints[CONFLICT_FREE_OFFSET(lID * 2 + 1)] = shared_ints[CONFLICT_FREE_OFFSET(2 * lID - stride + 1)] + shared_ints[CONFLICT_FREE_OFFSET(2 * lID + 1)];
+        }
+        stride = stride * 2;
+        
+        // sync with other threads
+        barrier();
+    }
+
+ 	// Set the last element to 0 and save sum
+    uint sum =  shared_ints[CONFLICT_FREE_OFFSET(localSize - 1)];
+    if (lID == 0) {
+        higherLevelArray[gl_WorkGroupID.x] = sum;
+        shared_ints[CONFLICT_FREE_OFFSET(localSize - 1)] = 0;
+    }
+
+    
+    barrier();
+
+    // Perform down-sweep
+    // loop until all (but last) propagations are performed
+    stride = halfsize;
+    while(stride > 1) {
+        if (rlID % stride == 0) {
+            // threads that participate in this propagations step
+
+            uint upperLeftValue = shared_ints[CONFLICT_FREE_OFFSET(lID * 2 + 1 - stride)];
+            // left child
+            shared_ints[CONFLICT_FREE_OFFSET(lID * 2 + 1 - stride)] = shared_ints[CONFLICT_FREE_OFFSET(lID * 2 + 1)];
+            // right child
+            shared_ints[CONFLICT_FREE_OFFSET(lID * 2 + 1)] = shared_ints[CONFLICT_FREE_OFFSET(lID * 2 + 1)] + upperLeftValue;
+        }
+        
+        // half the stride for next layer
+        stride = stride / 2;
+        
+        // sync for next propagation
+        barrier();
+
+    }
+
+    // unrolled last propagation, shift and write back
+
+    // right child
+    array[gID * 2] = shared_ints[CONFLICT_FREE_OFFSET(lID * 2 + 1)] + shared_ints[CONFLICT_FREE_OFFSET(lID * 2)];
+    if (lID > 0) {
+        // left child
+        array[gID * 2 - 1] = shared_ints[CONFLICT_FREE_OFFSET(lID * 2 + 1)];
+    }
+    if (lID == 0) {
+        // last element
+        array[gID * 2 + localSize - 1] = sum;
+    }
+}

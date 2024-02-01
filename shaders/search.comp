@@ -1,0 +1,114 @@
+#version 450
+
+layout(local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+
+
+#define lID gl_LocalInvocationID.x
+#define gID gl_GlobalInvocationID.x
+#define wSize gl_WorkGroupSize.x
+#define wID gl_WorkGroupID.x
+#define wCnt gl_NumWorkGroups.x
+
+#include "util.glsl"
+#include "hashing.glsl"
+#include "constants.glsl"
+
+// overwritten constants by vulkan!!!!
+layout(constant_id = 1) const uint BUCKETS = 42;
+layout(constant_id = 2) const uint BINS = 42;
+layout(constant_id = 3) const uint MAX_PARTITION_SIZE = 42;
+layout(constant_id = 4) const uint MAX_BUCKET_SIZE = 42;
+
+layout(binding = 0) buffer keysB {uint keys[];};
+layout(binding = 1) buffer bucketSizeHistoB {uint bucketSizeHisto[];};
+layout(binding = 2) buffer partitionSizesB {uint partitionSizes[];};
+layout(binding = 3) buffer bucketPermutationB {uint bucketPermutation[];};
+layout(binding = 4) buffer offsetsB {uint partitionOffsets[];};
+layout(binding = 5) buffer resultB {uint result[];};
+layout(binding = 6) buffer debugB {uint debug[];};
+
+shared uint[MAX_PARTITION_SIZE / 32] free;
+
+
+uint hash64(uint globalIndex, uint pilot) {
+	return hash(keys[2*globalIndex], hash(keys[2*globalIndex + 1], pilot))>>1;
+}
+
+shared uint[BUCKETS] pilotsFound;
+shared uint[MAX_BUCKET_SIZE] initialPos;
+shared uint[MAX_PARTITION_SIZE / 32] localCollisionArray;
+
+
+shared uint pilotFound;
+shared bool localCollision;
+shared uint sharedOffset;
+
+
+#include "search_strat_initial.glsl"
+
+
+
+bool searchBruteForce(uint size, uint partitionSize, uint globalBucketStartPos, uint bucketCnt, uint freeCnt) {
+	#include "search_stratB0.glsl"
+}
+
+
+#ifdef PILOT_LIMIT
+#include "search_stratC.glsl"
+#endif
+
+
+
+bool start(in uint partitionSize) {
+	// init shared arrays
+	for(uint i = lID; i < MAX_PARTITION_SIZE / 32; i+= wSize) {
+		free[i] = 0;
+	}
+	barrier();
+	
+	uint globalBucketStartPos = 0;
+	if(wID > 0) {
+		globalBucketStartPos = partitionOffsets[wID - 1];
+	}
+
+	uint bucketCnt=0;
+	uint freeCnt=partitionSize; 
+	uint diffCnt=0;
+	
+	float spaceSum=0;
+	
+	uint lastAccelDiffCnt=0xFFFFFFFF;
+
+	uint partitionSizeCnt=0;
+	for(uint i = 0; i < BINS; i+=1) {
+		uint size = BINS - i;
+		uint cnt = bucketSizeHisto[i + wID * BINS];
+		for(uint j = 0; j < cnt; j++) {
+			
+			partitionSizeCnt+=size;
+			bool succ = searchBruteForce(size, partitionSize, globalBucketStartPos, bucketCnt, freeCnt);
+			
+			freeCnt-=size;
+			bucketCnt+=1;
+			globalBucketStartPos += size;
+		}
+	}
+
+	// write back result
+	barrier();
+	for(uint index = lID; index < bucketCnt; index+=wSize) {
+		uint globalIndex = wID + bucketPermutation[index + wID * BUCKETS] * wCnt;
+		uint pilotV = pilotsFound[index];
+		result[globalIndex] = pilotV;
+	}
+
+	return true;
+}
+
+
+void main() {
+	// size of this partition
+	//uint partitionSize = (partitionSizes[wID] * ALPHA_PROMIL + 500) / 1000;
+	uint partitionSize = partitionSizes[wID];
+	start(partitionSize);
+} 

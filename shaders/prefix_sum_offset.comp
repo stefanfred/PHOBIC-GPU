@@ -1,0 +1,22 @@
+#version 450
+
+layout(local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+
+// Push constant
+layout(push_constant) uniform PushStruct {
+    uint size;
+} p;
+
+layout(binding = 0) buffer inoutBufer {uint v[];};
+layout(binding = 1) buffer offsetBufer {uint g_v[];};
+
+
+void main() {
+	uint gID = gl_GlobalInvocationID.x;
+	// same workgroupsize as local PPS
+	uint groupSize = 2 * gl_WorkGroupSize.x;
+	if (2 * gID + groupSize < p.size) {
+		v[2 * gID + groupSize] = v[2 * gID + groupSize] + g_v[gl_WorkGroupID.x];
+		v[2 * gID + groupSize + 1] = v[2 * gID + groupSize + 1] + g_v[gl_WorkGroupID.x];
+	}
+}

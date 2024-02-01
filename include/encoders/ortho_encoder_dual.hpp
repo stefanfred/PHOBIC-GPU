@@ -1,0 +1,51 @@
+#pragma once
+
+#include "ortho_encoder.hpp"
+
+namespace pthash {
+
+template <typename BaseEncoder1, typename BaseEncoder2, int num, int dom>
+struct OrthoEncoderDual {
+    OrthoEncoderDual() {}
+
+    template <typename Iterator>
+    void encode(Iterator begin, uint64_t partitions, uint64_t buckets) {
+        buckets1 = buckets * num/dom;
+        encoder1.resize(buckets1);
+        encoder2.resize(buckets - buckets1);
+
+        #pragma omp task
+        encoder1.encode();
+        encoder2.encode();
+    }
+
+    inline uint64_t access(uint64_t partition, uint64_t bucket) const {
+        if (bucket < buckets1) {
+            return encoder1[bucket].access(partition);
+        }
+        else {
+            return encoder2[bucket - buckets1].access(partition);
+        }
+    }
+
+
+    static std::string name() {
+        return "OrthoEncoder<"+BaseEncoder1::name()+", "+BaseEncoder2::name()+">";
+    }
+
+    uint64_t num_bits() const {
+        return encoder1.num_bits() + encoder2.num_bits();
+    }
+
+    template <typename Visitor>
+    void visit(Visitor& visitor) {
+        encoder1.visit(visitor);
+        encoder2.visit(visitor);
+    }
+
+private:
+    uint64_t buckets1;
+    BaseEncoder1 encoder1;
+    BaseEncoder2 encoder2;
+};
+}
