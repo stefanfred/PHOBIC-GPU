@@ -9,8 +9,8 @@
 
 
 namespace pthash {
-struct golomb_sequence {
-    golomb_sequence() {}
+struct golomb {
+    golomb() {}
 
     template <typename Iterator>
     uint64_t optimalL(Iterator begin, uint64_t n) {
