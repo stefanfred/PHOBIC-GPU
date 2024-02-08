@@ -5,26 +5,23 @@
 namespace pthash {
 
 template <typename BaseEncoder1, typename BaseEncoder2, int num, int dom>
-struct OrthoEncoderDual {
-    OrthoEncoderDual() {}
+struct orthoEncoderDual {
 
     template <typename Iterator>
     void encode(Iterator begin, uint64_t partitions, uint64_t buckets) {
         buckets1 = buckets * num/dom;
-        encoder1.resize(buckets1);
-        encoder2.resize(buckets - buckets1);
+        uint64_t buckets2 = buckets - buckets1;
 
         #pragma omp task
-        encoder1.encode();
-        encoder2.encode();
+        encoder1.encode(begin, partitions, buckets1);
+        encoder2.encode(begin + buckets1 * partitions, partitions, buckets2);
     }
 
     inline uint64_t access(uint64_t partition, uint64_t bucket) const {
         if (bucket < buckets1) {
-            return encoder1[bucket].access(partition);
-        }
-        else {
-            return encoder2[bucket - buckets1].access(partition);
+            return encoder1.access(partition, bucket);
+        } else {
+            return encoder2.access(partition, bucket - buckets1);
         }
     }
 
@@ -45,7 +42,7 @@ struct OrthoEncoderDual {
 
 private:
     uint64_t buckets1;
-    BaseEncoder1 encoder1;
-    BaseEncoder2 encoder2;
+    orthoEncoder<BaseEncoder1> encoder1;
+    orthoEncoder<BaseEncoder2> encoder2;
 };
 }

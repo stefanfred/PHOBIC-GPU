@@ -44,7 +44,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mbmi2 -msse4.2")
 
 
 ## include res
-file(COPY res DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY bucketMappings DESTINATION ${CMAKE_BINARY_DIR})
 
 #file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*")
 #foreach(file ${files})
