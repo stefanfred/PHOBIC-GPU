@@ -175,16 +175,19 @@ public:
         cb->destroy(app.device, app.computeCommandPool);
 
         // debug information
-        BufferAllocation print = debugBuffer;
+        /*BufferAllocation print = debugBuffer;
         size_t outSize = print.capacity / 4;
         std::vector<uint32_t> debug;
         debug.resize(outSize);
         fillHostWithStagingBuffer(app.pDevice, app.device, app.transferCommandPool, app.transferQueue, print, debug);
+
+        for(auto v : debug) {
+            std::cout<<v<<" ";
+        }
+        std::cout<<std::endl;*/
+
         f.setData(outputArray, partitionOffsetArray, partitions, config);
-
-
         totalTimer.addLabel("encoding");
-
         return true;
     }
 

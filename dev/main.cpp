@@ -55,5 +55,4 @@ int main(int argc, char* argv[])
         taken[hash] = true;
     }
     std::cout<<"valid for "<< keys.size()<<std::endl;
-    return 0;
 }

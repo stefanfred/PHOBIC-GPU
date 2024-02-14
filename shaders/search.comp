@@ -44,43 +44,120 @@ shared bool localCollision;
 shared uint sharedOffset;
 
 
-#include "search_strat_initial.glsl"
-
-bool searchBruteForce(uint size, uint partitionSize, uint globalBucketStartPos, uint bucketCnt, uint freeCnt) {
-	#include "search_stratB0.glsl"
+uint pos(uint i, uint offset, uint partitionSize) {
+	uint pos = initialPos[i] + offset;
+	if(pos>=partitionSize) {
+		pos -=partitionSize;
+	}
+	return pos;
 }
 
+void initial_pos(uint globalBucketStartPos, uint pilot, uint partitionSize, uint size) {
+	if(size==1) {
+		if(lID==0) {
+			initialPos[0] = hash64(globalBucketStartPos, pilot) % partitionSize;
+		}
+		barrier();
+		return;
+	}
 
-bool start(in uint partitionSize) {
+	if(lID==0) {
+		localCollision = false;
+	}
+
+	for(uint index = lID; index < MAX_PARTITION_SIZE / 32; index+= wSize) {
+		localCollisionArray[index] = 0;
+	}
+	barrier();
+	for(uint i = lID;i < size && !localCollision; i+=wSize) {
+		uint pos = hash64(globalBucketStartPos + i, pilot) % partitionSize;
+		uint mask = 1 << (pos % 32);
+		if((atomicOr(localCollisionArray[pos / 32], mask) & mask) != 0) {
+			localCollision = true;
+		}
+		initialPos[i] = pos;
+		barrier();
+	}
+}
+
+bool testPilot(uint size, uint partitionSize, uint globalBucketStartPos, uint pilot) {
+	uint offset = lID;
+	// find no local coll pilot
+	initial_pos(globalBucketStartPos, pilot, partitionSize, size);
+	if(size>1) {
+		if(localCollision) {
+			return false;
+		}
+	}
+
+	if(lID==0) {
+		pilotFound = 0xFFFFFFFF;
+		sharedOffset = wSize;
+	}
+	barrier();
+
+	uint index = 0;
+	while(offset < partitionSize && pilotFound == 0xFFFFFFFF) {
+		uint pos = pos(index, offset, partitionSize);
+		index+=1;
+		if((free[pos / 32U] & (1U << (pos % 32U))) != 0U) {
+			index=0;
+			offset=atomicAdd(sharedOffset, 1);
+		} else if(index==size) {
+			atomicMin(pilotFound, offset);
+		}
+		//barrier();
+	}
+	barrier();
+	return pilotFound != 0xFFFFFFFF;
+}
+
+void searchPilot(uint size, uint partitionSize, uint globalBucketStartPos, uint bucketCnt) {
+	uint pilot = 0;
+
+	while(!testPilot(size, partitionSize, globalBucketStartPos, pilot)) { // search for mapping
+		pilot+=1;
+	}
+
+	// mark occupied
+	for(uint i = lID;i < size; i+=wSize) {
+		uint pos = pos(i, pilotFound, partitionSize);
+		uint mask = 1U << (pos % 32U);
+		atomicOr(free[pos/32U], mask);
+	}
+	barrier();
+
+	// write pilot to output
+	if(lID == 0) {
+		pilotsFound[bucketCnt] = pilotFound + partitionSize * pilot;
+	}
+}
+
+void main() {
+	// size of this partition
+	//uint partitionSize = (partitionSizes[wID] * ALPHA_PROMIL + 500) / 1000;
+	uint partitionSize = partitionSizes[wID];
 	// init shared arrays
-	for(uint i = lID; i < MAX_PARTITION_SIZE / 32; i+= wSize) {
+	for(uint i = lID; i < MAX_PARTITION_SIZE / 32U; i+= wSize) {
 		free[i] = 0;
 	}
 	barrier();
-	
+
 	uint globalBucketStartPos = 0;
 	if(wID > 0) {
 		globalBucketStartPos = partitionOffsets[wID - 1];
 	}
 
 	uint bucketCnt=0;
-	uint freeCnt=partitionSize; 
-	uint diffCnt=0;
-	
-	float spaceSum=0;
-	
+
+
 	uint lastAccelDiffCnt=0xFFFFFFFF;
 
-	uint partitionSizeCnt=0;
 	for(uint i = 0; i < BINS; i+=1) {
 		uint size = BINS - i;
 		uint cnt = bucketSizeHisto[i + wID * BINS];
 		for(uint j = 0; j < cnt; j++) {
-
-			partitionSizeCnt+=size;
-			bool succ = searchBruteForce(size, partitionSize, globalBucketStartPos, bucketCnt, freeCnt);
-			
-			freeCnt-=size;
+			searchPilot(size, partitionSize, globalBucketStartPos, bucketCnt);
 			bucketCnt+=1;
 			globalBucketStartPos += size;
 		}
@@ -94,14 +171,4 @@ bool start(in uint partitionSize) {
 		result[globalIndex] = pilotV;
 		debug[globalIndex] = pilotV;
 	}
-
-	return true;
-}
-
-
-void main() {
-	// size of this partition
-	//uint partitionSize = (partitionSizes[wID] * ALPHA_PROMIL + 500) / 1000;
-	uint partitionSize = partitionSizes[wID];
-	start(partitionSize);
 } 

@@ -63,7 +63,6 @@ public:
 		uint32_t pilot = pilots.access(partition, bucket);
         uint32_t partitionOffset = partitionOffsets.access(partition);
         uint32_t partitionSize = partitionOffsets.access(partition+1)-partitionOffset;
-        // std::cout<<partitionOffset<<" "<<partitionSize<<" "<<partition<<" "<<bucket<<" " << pilot<<std::endl;
 		return partitionOffset + hashPos(pilot, key.lower1, key.lower2, partitionSize);
 	}
 

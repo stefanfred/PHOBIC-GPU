@@ -6,9 +6,14 @@ namespace pthash {
 
 template <typename BaseEncoder>
 struct mono_encoder {
+private:
+    uint64_t partitions;
+    BaseEncoder enc;
+
+public:
     template <typename Iterator>
     void encode(Iterator begin, uint64_t partitions, uint64_t buckets) {
-        bucketsPerPart = buckets;
+        this->partitions = partitions;
         enc.encode(begin, partitions * buckets);
     }
 
@@ -25,16 +30,12 @@ struct mono_encoder {
     }
 
     inline uint64_t access(uint64_t partition, uint64_t bucket) const {
-        return enc.access(bucketsPerPart * partition + bucket);
+        return enc.access(partitions * bucket + partition);
     }
 
     template <typename Visitor>
     void visit(Visitor& visitor) {
         visitor.visit(enc);
     }
-
-    private:
-    uint64_t bucketsPerPart;
-    BaseEncoder enc;
 };
 }  // namespace pthash
