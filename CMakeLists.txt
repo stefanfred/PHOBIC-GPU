@@ -6,6 +6,13 @@ if((CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDeb
     add_compile_options(-march=native)
 endif()
 
+# ---------------------------- Dependencies ----------------------------
+if(NOT TARGET tlx)
+    set(TLX_INSTALL_INCLUDE_DIR tlx CACHE PATH "Workaround for TLX breaking the first cmake call")
+    add_subdirectory(external/tlx)
+endif()
+
+# ---------------------------- Library Setup ----------------------------
 function(add_shader TARGET SHADER)
     find_program(GLSLC glslc)
 
@@ -34,7 +41,6 @@ endfunction(add_shader)
 find_package(Vulkan REQUIRED)
 find_package(OpenMP)
 
-# ---------------------------- Library Setup ----------------------------
 file(GLOB_RECURSE SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 add_library(GpuPTHash SHARED ${SOURCE_FILES})
 target_compile_features(GpuPTHash INTERFACE cxx_std_17)
@@ -55,5 +61,5 @@ file(COPY bucketMappings DESTINATION ${CMAKE_BINARY_DIR}) # include bucket mappi
 # ---------------------------- Benchmarks ----------------------------
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     add_executable(DEV dev/main.cpp)
-    target_link_libraries(DEV PUBLIC GpuPTHash)
+    target_link_libraries(DEV PUBLIC GpuPTHash tlx)
 endif()
