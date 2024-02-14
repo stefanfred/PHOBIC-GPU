@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 project(MPHF LANGUAGES CXX)
 
+if((CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+        AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    add_compile_options(-march=native)
+endif()
+
 function(add_shader TARGET SHADER)
     find_program(GLSLC glslc)
 
