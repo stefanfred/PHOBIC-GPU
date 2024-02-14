@@ -29,15 +29,15 @@ uint upper32BitMultiply(uint a, uint b) {
 }
 
 #include "constants.glsl"
-layout(set = 1, binding = 0) buffer fulcsB {uint fulcs[];};
+layout(set = 1, binding = 0) buffer fulcsB { uint fulcs[]; };
 
 uint assignBucketRelative(uint keyUpper, uint bucketsPerPartition) {
-	uint inter = keyUpper * (FULCS_INTER - 1);
-	uint index = upper32BitMultiply(keyUpper, (FULCS_INTER - 1));
-	uint v1 = upper32BitMultiply(fulcs[index + 0], inter);
-	uint v2 = upper32BitMultiply(fulcs[index + 1], 0xFFFFFFFF - inter);
-    
-	return (v1 + v2)>>16;
+    uint inter = keyUpper * (FULCS_INTER - 1);
+    uint index = upper32BitMultiply(keyUpper, (FULCS_INTER - 1));
+    uint v1 = upper32BitMultiply(fulcs[index + 0], inter);
+    uint v2 = upper32BitMultiply(fulcs[index + 1], 0xFFFFFFFF - inter);
+
+    return (v1 + v2)>>16;
 }
 
 uint assignPartition(uint partitioner, uint partitions, uint bucketsPerPartition) {
@@ -45,5 +45,5 @@ uint assignPartition(uint partitioner, uint partitions, uint bucketsPerPartition
 }
 
 uint assignBucketAbsolute(uint partitioner, uint bucketer, uint partitions, uint bucketsPerPartition) {
-	return assignBucketRelative(bucketer, bucketsPerPartition) + assignPartition(partitioner, partitions, bucketsPerPartition) * bucketsPerPartition;
+    return assignBucketRelative(bucketer, bucketsPerPartition) + assignPartition(partitioner, partitions, bucketsPerPartition) * bucketsPerPartition;
 }

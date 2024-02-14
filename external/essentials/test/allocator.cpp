@@ -6,19 +6,17 @@
 
 using namespace essentials;
 
-template <typename T1, typename T2>
+template<typename T1, typename T2>
 struct basic {
     basic()
-        : x(0)
-        , y(0)
-        , z(0) {}
+            : x(0), y(0), z(0) {}
 
     void reserve(size_t n) {
         m_data1.reserve(n);
         m_data2.reserve(n);
     }
 
-    void push_back(T1 const& val1, T2 const& val2) {
+    void push_back(T1 const &val1, T2 const &val2) {
         x = 12;
         y = 90;
         z = 723725;
@@ -26,8 +24,8 @@ struct basic {
         m_data2.push_back(val2);
     }
 
-    template <typename Visitor>
-    void visit(Visitor& visitor) {
+    template<typename Visitor>
+    void visit(Visitor &visitor) {
         visitor.visit(x);
         visitor.visit(y);
         visitor.visit(z);
@@ -37,9 +35,9 @@ struct basic {
 
     void print() const {
         std::cout << "x = " << x << "; y = " << y << "; z = " << z << std::endl;
-        for (auto val : m_data1) std::cout << val << " ";
+        for (auto val: m_data1) std::cout << val << " ";
         std::cout << std::endl;
-        for (auto val : m_data2) std::cout << val << " ";
+        for (auto val: m_data2) std::cout << val << " ";
         std::cout << std::endl;
     }
 
@@ -55,6 +53,7 @@ struct complex {
     typedef basic<int, double> value_type;
 
     complex() {}
+
     complex(size_t n) {
         m_data.reserve(n);
         for (size_t i = 0; i != n; ++i) {
@@ -68,11 +67,11 @@ struct complex {
     }
 
     void print() const {
-        for (auto const& obj : m_data) obj.print();
+        for (auto const &obj: m_data) obj.print();
     }
 
-    template <typename Visitor>
-    void visit(Visitor& visitor) {
+    template<typename Visitor>
+    void visit(Visitor &visitor) {
         visitor.visit(m_data);
     }
 
@@ -83,13 +82,14 @@ struct complex {
 private:
     // contiguous_memory_allocator m_allocator;
     std::vector<value_type
-                // allocator<value_type>
-                >
-        m_data;
+            // allocator<value_type>
+    >
+            m_data;
 };
 
 struct wrapper {
     wrapper() {}
+
     wrapper(size_t n) {
         m_data.reserve(n);
         for (size_t i = 0; i != n; ++i) {
@@ -99,17 +99,17 @@ struct wrapper {
     }
 
     void print() const {
-        for (auto const& obj : m_data) obj.print();
+        for (auto const &obj: m_data) obj.print();
     }
 
-    template <typename Visitor>
-    void visit(Visitor& visitor) {
+    template<typename Visitor>
+    void visit(Visitor &visitor) {
         visitor.visit(m_data);
     }
 
     /* This function and the allocator are the only two things to add
     to use a custom memory allocator. */
-    contiguous_memory_allocator& get_allocator() {
+    contiguous_memory_allocator &get_allocator() {
         return m_allocator;
     }
 
@@ -122,7 +122,7 @@ private:
 
 int main() {
     static const size_t n = 10;
-    char const* filename = "./.tmp.bin";
+    char const *filename = "./.tmp.bin";
     size_t bytes = 0;
 
     // {

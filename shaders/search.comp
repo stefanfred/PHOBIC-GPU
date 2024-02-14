@@ -9,7 +9,6 @@ layout(local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
 #define wID gl_WorkGroupID.x
 #define wCnt gl_NumWorkGroups.x
 
-#include "util.glsl"
 #include "hashing.glsl"
 #include "constants.glsl"
 
@@ -19,156 +18,151 @@ layout(constant_id = 2) const uint BINS = 42;
 layout(constant_id = 3) const uint MAX_PARTITION_SIZE = 42;
 layout(constant_id = 4) const uint MAX_BUCKET_SIZE = 42;
 
-layout(binding = 0) buffer keysB {uint keys[];};
-layout(binding = 1) buffer bucketSizeHistoB {uint bucketSizeHisto[];};
-layout(binding = 2) buffer partitionSizesB {uint partitionSizes[];};
-layout(binding = 3) buffer bucketPermutationB {uint bucketPermutation[];};
-layout(binding = 4) buffer offsetsB {uint partitionOffsets[];};
-layout(binding = 5) buffer resultB {uint result[];};
-layout(binding = 6) buffer debugB {uint debug[];};
+layout(binding = 0) buffer keysB { uint keys[]; };
+layout(binding = 1) buffer bucketSizeHistoB { uint bucketSizeHisto[]; };
+layout(binding = 2) buffer partitionSizesB { uint partitionSizes[]; };
+layout(binding = 3) buffer bucketPermutationB { uint bucketPermutation[]; };
+layout(binding = 4) buffer offsetsB { uint partitionOffsets[]; };
+layout(binding = 5) buffer resultB { uint result[]; };
+layout(binding = 6) buffer debugB { uint debug[]; };
 
 shared uint[MAX_PARTITION_SIZE / 32] free;
-
-
-uint hash64(uint globalIndex, uint pilot) {
-	return hash(keys[2*globalIndex], hash(keys[2*globalIndex + 1], pilot))>>1;
-}
-
 shared uint[BUCKETS] pilotsFound;
 shared uint[MAX_BUCKET_SIZE] initialPos;
 shared uint[MAX_PARTITION_SIZE / 32] localCollisionArray;
-
 
 shared uint pilotFound;
 shared bool localCollision;
 shared uint sharedOffset;
 
 
+uint hash64(uint globalIndex, uint pilot) {
+    return hash(keys[2*globalIndex], hash(keys[2*globalIndex + 1], pilot))>>1;
+}
+
+
 uint pos(uint i, uint offset, uint partitionSize) {
-	uint pos = initialPos[i] + offset;
-	if(pos>=partitionSize) {
-		pos -=partitionSize;
-	}
-	return pos;
+    uint pos = initialPos[i] + offset;
+    if (pos>=partitionSize) {
+        pos -=partitionSize;
+    }
+    return pos;
 }
 
 void initial_pos(uint globalBucketStartPos, uint pilot, uint partitionSize, uint size) {
-	if(size==1) {
-		if(lID==0) {
-			initialPos[0] = hash64(globalBucketStartPos, pilot) % partitionSize;
-		}
-		barrier();
-		return;
-	}
+    if (size==1) {
+        if (lID==0) {
+            initialPos[0] = hash64(globalBucketStartPos, pilot) % partitionSize;
+        }
+        barrier();
+        return;
+    }
 
-	if(lID==0) {
-		localCollision = false;
-	}
+    if (lID==0) {
+        localCollision = false;
+    }
 
-	for(uint index = lID; index < MAX_PARTITION_SIZE / 32; index+= wSize) {
-		localCollisionArray[index] = 0;
-	}
-	barrier();
-	for(uint i = lID;i < size && !localCollision; i+=wSize) {
-		uint pos = hash64(globalBucketStartPos + i, pilot) % partitionSize;
-		uint mask = 1 << (pos % 32);
-		if((atomicOr(localCollisionArray[pos / 32], mask) & mask) != 0) {
-			localCollision = true;
-		}
-		initialPos[i] = pos;
-		barrier();
-	}
+    for (uint index = lID; index < MAX_PARTITION_SIZE / 32; index+= wSize) {
+        localCollisionArray[index] = 0;
+    }
+    barrier();
+    for (uint i = lID;i < size && !localCollision; i+=wSize) {
+        uint pos = hash64(globalBucketStartPos + i, pilot) % partitionSize;
+        uint mask = 1 << (pos % 32);
+        if ((atomicOr(localCollisionArray[pos / 32], mask) & mask) != 0) {
+            localCollision = true;
+        }
+        initialPos[i] = pos;
+        barrier();
+    }
 }
 
 bool testPilot(uint size, uint partitionSize, uint globalBucketStartPos, uint pilot) {
-	uint offset = lID;
-	// find no local coll pilot
-	initial_pos(globalBucketStartPos, pilot, partitionSize, size);
-	if(size>1) {
-		if(localCollision) {
-			return false;
-		}
-	}
+    uint offset = lID;
+    // find no local coll pilot
+    initial_pos(globalBucketStartPos, pilot, partitionSize, size);
+    if (size>1) {
+        if (localCollision) {
+            return false;
+        }
+    }
 
-	if(lID==0) {
-		pilotFound = 0xFFFFFFFF;
-		sharedOffset = wSize;
-	}
-	barrier();
+    if (lID==0) {
+        pilotFound = 0xFFFFFFFF;
+        sharedOffset = wSize;
+    }
+    barrier();
 
-	uint index = 0;
-	while(offset < partitionSize && pilotFound == 0xFFFFFFFF) {
-		uint pos = pos(index, offset, partitionSize);
-		index+=1;
-		if((free[pos / 32U] & (1U << (pos % 32U))) != 0U) {
-			index=0;
-			offset=atomicAdd(sharedOffset, 1);
-		} else if(index==size) {
-			atomicMin(pilotFound, offset);
-		}
-		//barrier();
-	}
-	barrier();
-	return pilotFound != 0xFFFFFFFF;
+    uint index = 0;
+    while (offset < partitionSize && pilotFound == 0xFFFFFFFF) {
+        uint pos = pos(index, offset, partitionSize);
+        index+=1;
+        if ((free[pos / 32U] & (1U << (pos % 32U))) != 0U) {
+            index=0;
+            offset=atomicAdd(sharedOffset, 1);
+        } else if (index==size) {
+            atomicMin(pilotFound, offset);
+        }
+        //barrier();
+    }
+    barrier();
+    return pilotFound != 0xFFFFFFFF;
 }
 
 void searchPilot(uint size, uint partitionSize, uint globalBucketStartPos, uint bucketCnt) {
-	uint pilot = 0;
+    uint pilot = 0;
 
-	while(!testPilot(size, partitionSize, globalBucketStartPos, pilot)) { // search for mapping
-		pilot+=1;
-	}
+    while (!testPilot(size, partitionSize, globalBucketStartPos, pilot)) { // search for mapping
+        pilot+=1;
+    }
 
-	// mark occupied
-	for(uint i = lID;i < size; i+=wSize) {
-		uint pos = pos(i, pilotFound, partitionSize);
-		uint mask = 1U << (pos % 32U);
-		atomicOr(free[pos/32U], mask);
-	}
-	barrier();
+    // mark occupied
+    for (uint i = lID;i < size; i+=wSize) {
+        uint pos = pos(i, pilotFound, partitionSize);
+        uint mask = 1U << (pos % 32U);
+        atomicOr(free[pos/32U], mask);
+    }
+    barrier();
 
-	// write pilot to output
-	if(lID == 0) {
-		pilotsFound[bucketCnt] = pilotFound + partitionSize * pilot;
-	}
+    // write pilot to output
+    if (lID == 0) {
+        pilotsFound[bucketCnt] = pilotFound + partitionSize * pilot;
+    }
 }
 
 void main() {
-	// size of this partition
-	//uint partitionSize = (partitionSizes[wID] * ALPHA_PROMIL + 500) / 1000;
-	uint partitionSize = partitionSizes[wID];
-	// init shared arrays
-	for(uint i = lID; i < MAX_PARTITION_SIZE / 32U; i+= wSize) {
-		free[i] = 0;
-	}
-	barrier();
+    // size of this partition
+    //uint partitionSize = (partitionSizes[wID] * ALPHA_PROMIL + 500) / 1000;
+    uint partitionSize = partitionSizes[wID];
+    // init shared arrays
+    for (uint i = lID; i < MAX_PARTITION_SIZE / 32U; i+= wSize) {
+        free[i] = 0;
+    }
+    barrier();
 
-	uint globalBucketStartPos = 0;
-	if(wID > 0) {
-		globalBucketStartPos = partitionOffsets[wID - 1];
-	}
+    uint globalBucketStartPos = 0;
+    if (wID > 0) {
+        globalBucketStartPos = partitionOffsets[wID - 1];
+    }
 
-	uint bucketCnt=0;
+    uint bucketCnt=0;
 
+    for (uint i = 0; i < BINS; i+=1) {
+        uint size = BINS - i;
+        uint cnt = bucketSizeHisto[i + wID * BINS];
+        for (uint j = 0; j < cnt; j++) {
+            searchPilot(size, partitionSize, globalBucketStartPos, bucketCnt);
+            bucketCnt+=1;
+            globalBucketStartPos += size;
+        }
+    }
 
-	uint lastAccelDiffCnt=0xFFFFFFFF;
-
-	for(uint i = 0; i < BINS; i+=1) {
-		uint size = BINS - i;
-		uint cnt = bucketSizeHisto[i + wID * BINS];
-		for(uint j = 0; j < cnt; j++) {
-			searchPilot(size, partitionSize, globalBucketStartPos, bucketCnt);
-			bucketCnt+=1;
-			globalBucketStartPos += size;
-		}
-	}
-
-	// write back result
-	barrier();
-	for(uint index = lID; index < bucketCnt; index+=wSize) {
-		uint globalIndex = wID + bucketPermutation[index + wID * BUCKETS] * wCnt;
-		uint pilotV = pilotsFound[index];
-		result[globalIndex] = pilotV;
-		debug[globalIndex] = pilotV;
-	}
+    // write back result
+    barrier();
+    for (uint index = lID; index < bucketCnt; index+=wSize) {
+        uint globalIndex = wID + bucketPermutation[index + wID * BUCKETS] * wCnt;
+        uint pilotV = pilotsFound[index];
+        result[globalIndex] = pilotV;
+        debug[globalIndex] = pilotV;
+    }
 } 

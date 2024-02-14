@@ -4,7 +4,7 @@
 
 using namespace essentials;
 
-template <typename T>
+template<typename T>
 struct basic {
     static_assert(std::is_pod<T>::value);
 
@@ -14,7 +14,7 @@ struct basic {
         m_data.reserve(n);
     }
 
-    void push_back(T const& val) {
+    void push_back(T const &val) {
         m_data.push_back(val);
     }
 
@@ -22,8 +22,8 @@ struct basic {
         return m_data.size();
     }
 
-    template <typename Visitor>
-    void visit(Visitor& visitor) {
+    template<typename Visitor>
+    void visit(Visitor &visitor) {
         visitor.visit(x);
         visitor.visit(m_data);
     }
@@ -33,7 +33,7 @@ private:
     std::vector<T> m_data;
 };
 
-template <typename T>
+template<typename T>
 struct collection {
     collection() {
         int n = 13;
@@ -43,7 +43,7 @@ struct collection {
         }
 
         m_data2.resize(n);
-        for (auto& d : m_data2) {
+        for (auto &d: m_data2) {
             d.resize(5, 0);
         }
     }
@@ -57,7 +57,7 @@ struct collection {
         m_data[index].reserve(n);
     }
 
-    void push_back(uint32_t index, T const& val) {
+    void push_back(uint32_t index, T const &val) {
         assert(index < size());
         m_data[index].push_back(val);
     }
@@ -66,8 +66,8 @@ struct collection {
         return m_data.size();
     }
 
-    template <typename Visitor>
-    void visit(Visitor& visitor) {
+    template<typename Visitor>
+    void visit(Visitor &visitor) {
         visitor.visit(x);
         visitor.visit(m_data);
         visitor.visit(m_data2);
@@ -97,14 +97,14 @@ int main() {
             }
         }
 
-        char const* output_filename = "./my_ds.bin";
+        char const *output_filename = "./my_ds.bin";
         size_t written_bytes = save(my_ds, output_filename);
         std::cout << "written bytes = " << written_bytes << std::endl;
     }
 
     {
         collection<uint64_t> my_ds;
-        char const* input_filename = "./my_ds.bin";
+        char const *input_filename = "./my_ds.bin";
         size_t read_bytes = load(my_ds, input_filename);
         std::cout << "read bytes = " << read_bytes << std::endl;
         std::cout << convert(read_bytes, KB) << " [KB]" << std::endl;

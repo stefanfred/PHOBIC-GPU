@@ -56,10 +56,10 @@ add_executable(DEV ${SOURCE_FILES} "${CMAKE_CURRENT_SOURCE_DIR}/dev/main.cpp")
 
 
 file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.comp")
-foreach(file ${files})
+foreach (file ${files})
     get_filename_component(file ${file} NAME)
     add_shader(DEV shaders/${file})
-endforeach()
+endforeach ()
 
 ## include project include files
 target_include_directories(DEV PUBLIC "${CMAKE_SOURCE_DIR}/include")
@@ -74,33 +74,32 @@ target_include_directories(DEV PUBLIC "${CMAKE_SOURCE_DIR}/external")
 #endif()
 
 
-target_include_directories(DEV PRIVATE ${Vulkan_INCLUDE_DIRS} )
+target_include_directories(DEV PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(DEV PRIVATE Vulkan::Vulkan)
 target_link_libraries(DEV PUBLIC OpenMP::OpenMP_CXX)
-
 
 
 ## include all source files in src/ directory
 #file(GLOB_RECURSE SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 file(GLOB TEST_SOURCES test/test_*.cpp)
-foreach(TEST_SRC ${TEST_SOURCES})
-    get_filename_component (TEST_SRC_NAME ${TEST_SRC} NAME_WE) # without extension
-    add_executable(${TEST_SRC_NAME} ${TEST_SRC} ${SOURCE_FILES} )
+foreach (TEST_SRC ${TEST_SOURCES})
+    get_filename_component(TEST_SRC_NAME ${TEST_SRC} NAME_WE) # without extension
+    add_executable(${TEST_SRC_NAME} ${TEST_SRC} ${SOURCE_FILES})
     add_test(${TEST_SRC_NAME} ${TEST_SRC_NAME})
 
     file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.comp")
-    foreach(file ${files})
+    foreach (file ${files})
         get_filename_component(file ${file} NAME)
         add_shader(${TEST_SRC_NAME} shaders/${file})
-    endforeach()
+    endforeach ()
 
     ## include project include files
     target_include_directories(${TEST_SRC_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/include")
     target_include_directories(${TEST_SRC_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/src")
     target_include_directories(${TEST_SRC_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/external")
 
-    target_include_directories(${TEST_SRC_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS} )
+    target_include_directories(${TEST_SRC_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
     target_link_libraries(${TEST_SRC_NAME} PUBLIC OpenMP::OpenMP_CXX)
     target_link_libraries(${TEST_SRC_NAME} PRIVATE Vulkan::Vulkan)
-endforeach(TEST_SRC)
+endforeach (TEST_SRC)

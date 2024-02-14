@@ -8,35 +8,35 @@
 
 class Bucketer {
 public:
-	virtual double getBucketRel(double relInput) const = 0;
+    virtual double getBucketRel(double relInput) const = 0;
 };
 
 class ConstantBucketer : public Bucketer {
 public:
-	double getBucketRel(double relInput) const {
-		return relInput;
-	}
+    double getBucketRel(double relInput) const {
+        return relInput;
+    }
 };
 
 class Theo1Bucketer : public Bucketer {
 public:
-	double getBucketRel(double relInput) const  {
-		if (relInput > 0.9999) {
-			return 1.0;
-		}
-		return (relInput - (relInput - 1.0) * log(1.0 - relInput));
-	}
+    double getBucketRel(double relInput) const {
+        if (relInput > 0.9999) {
+            return 1.0;
+        }
+        return (relInput - (relInput - 1.0) * log(1.0 - relInput));
+    }
 };
 
 class PTBucketer : public Bucketer {
 public:
-	double getBucketRel(double relInput) const  {
-		if (relInput < 0.6) {
-			return relInput / 0.6 * 0.3;
-		} else {
-			return 0.3 + (relInput - 0.6) / 0.4 * 0.7;
-		}
-	}
+    double getBucketRel(double relInput) const {
+        if (relInput < 0.6) {
+            return relInput / 0.6 * 0.3;
+        } else {
+            return 0.3 + (relInput - 0.6) / 0.4 * 0.7;
+        }
+    }
 };
 
 class CSVBucketer : public Bucketer {

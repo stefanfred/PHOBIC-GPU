@@ -1,6 +1,6 @@
 #pragma once
 
-#include "app.h"
+#include "app/app.h"
 #include "bucket_sizes_stage.h"
 #include "bucket_sort_stage.h"
 #include "prefix_sum_stage.h"
@@ -14,20 +14,22 @@
 
 class MPHFbuilder {
 
-    template <typename Mphf>
-    friend class BuildInvocation;
-private:
-	MPHFconfig config;
-	App& app;
+    template<typename Mphf>
+    friend
+    class BuildInvocation;
 
-	BucketSizesStage bucketSizesStage;
-	BucketSortStage bucketSortStage;
-	RedistributeKeysStage redistributeKeysStage;
-	SearchStage searchStage;
-	PrefixSumStage partitionOffsetPPSStage;
-	PartitionOffsetStage applyPartitionOffsetStage;
+private:
+    MPHFconfig config;
+    App &app;
+
+    BucketSizesStage bucketSizesStage;
+    BucketSortStage bucketSortStage;
+    RedistributeKeysStage redistributeKeysStage;
+    SearchStage searchStage;
+    PrefixSumStage partitionOffsetPPSStage;
+    PartitionOffsetStage applyPartitionOffsetStage;
 public:
-    MPHFbuilder(App& app, MPHFconfig config):
+    MPHFbuilder(App &app, MPHFconfig config) :
             config(config),
             app(app),
             bucketSizesStage(BucketSizesStage(app, 32)),
@@ -35,12 +37,11 @@ public:
             redistributeKeysStage(RedistributeKeysStage(app, 32)),
             searchStage(SearchStage(app, 32, config)),
             partitionOffsetPPSStage(PrefixSumStage(app, 32, 32)),
-            applyPartitionOffsetStage(PartitionOffsetStage(app, 32, config.bucketCountPerPartition))
-    {}
+            applyPartitionOffsetStage(PartitionOffsetStage(app, 32, config.bucketCountPerPartition)) {}
 
 
-    template <typename Mphf>
-    void build(const std::vector<Key> &keys, Mphf& f) {
+    template<typename Mphf>
+    void build(const std::vector<Key> &keys, Mphf &f) {
         BuildInvocation<Mphf> bd(f, keys, keys.size(), config, app, this);
         bd.run();
         bd.destroy();

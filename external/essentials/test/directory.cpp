@@ -11,7 +11,7 @@ int main() {
     std::cout << "directory name: '" << dir.name() << "'" << std::endl;
     std::cout << "found " << dir.items() << " items" << std::endl;
 
-    for (auto const& fn : dir) {
+    for (auto const &fn: dir) {
         if (fn.extension == "cpp") {
             std::cout << "---" << std::endl;
             std::cout << fn.name << std::endl;

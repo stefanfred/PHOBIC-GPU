@@ -1,7 +1,8 @@
 C++ Essentials
 ==============
 
-A self-contained, header-only, collection of some essential C++ utilities that I use extensively for data structure design and benchmarking.
+A self-contained, header-only, collection of some essential C++ utilities that I use extensively for data structure
+design and benchmarking.
 Meant to be used in larger projects.
 
 #### NOTE: C++17 is needed to use the library.
@@ -12,8 +13,6 @@ The library is used in several other C++ libraries, such as
 * [PTHash](https://github.com/jermp/pthash), a library implementing efficient minimal and perfect hash functions;
 * [Auto-Complete](https://github.com/jermp/autocomplete), a library for fast and effective query auto-completion;
 * [Bit-Sliced Indexes](https://github.com/jermp/s_indexes), a library providing fast compressed bitmaps.
-
- 
 
 Integration
 -----------
@@ -30,14 +29,13 @@ What's inside?
 --------------
 
 * benchmarking facilities, including: messages displaying local time,
-configurable timer class, function to prevent code elision by compiler,
-simple creation and printing of json documents
+  configurable timer class, function to prevent code elision by compiler,
+  simple creation and printing of json documents
 * functions to serialize-to and load-from disk data structures
 * functions to compute the number of bytes consumed by data structures
 * support for creating, removing, and iterate inside directories
 
 * **Experimental**: transparent support for contiguous memory allocation
-
 
 Examples
 --------

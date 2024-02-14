@@ -7,23 +7,20 @@ layout(push_constant) uniform PushStruct {
     uint partitionMaxSize;
 } p;
 
-layout(binding = 0) buffer bucketSizesB {uint bucketSizes[];};
-layout(binding = 1) buffer debugB {uint debug[];};
-layout(binding = 2) buffer histoB {uint histo[];};
-layout(binding = 3) buffer partitionSizesB {uint partitionSizes[];};
-layout(binding = 4) buffer bucketPermutationB {uint bucketPermutation[];};
+layout(binding = 0) buffer bucketSizesB { uint bucketSizes[]; };
+layout(binding = 1) buffer debugB { uint debug[]; };
+layout(binding = 2) buffer histoB { uint histo[]; };
+layout(binding = 3) buffer partitionSizesB { uint partitionSizes[]; };
+layout(binding = 4) buffer bucketPermutationB { uint bucketPermutation[]; };
 layout(constant_id = 1) const uint BUCKETS = 42;
 
-#define NUM_BANKS			32
-#define CONFLICT_FREE_OFFSET(n)  n
 
 #define BINS (gl_WorkGroupSize.x * 2)
 
-#include "util.glsl"
 #include "constants.glsl"
 
-shared uint[CONFLICT_FREE_OFFSET(BINS-1)+1] binSizes;
-shared uint[CONFLICT_FREE_OFFSET(BINS-1)+1] binSizesCopy;
+shared uint[(BINS-1)+1] binSizes;
+shared uint[(BINS-1)+1] binSizesCopy;
 shared uint[BUCKETS] bucketSizesLocal;
 shared uint[BUCKETS] bucketCntInBin;
 
@@ -33,13 +30,13 @@ shared uint[BUCKETS] bucketCntInBin;
 shared uint permutationData[BUCKETS];
 #include "hashing.glsl"
 void shuffle(uint start) {
-    if(gl_LocalInvocationID.x!=0) {
+    if (gl_LocalInvocationID.x!=0) {
         return;
     }
-    for(uint index = 0; index < BUCKETS; index+=1) {
+    for (uint index = 0; index < BUCKETS; index+=1) {
         permutationData[index]=index;
     }
-    for(uint index = 0; index < BUCKETS *10; index+=1) {
+    for (uint index = 0; index < BUCKETS *10; index+=1) {
         uint i1=rand(start^index, BUCKETS);
         uint i2=rand(start^(index+BUCKETS *10), BUCKETS);
         uint tmp=permutationData[i1];
@@ -57,10 +54,10 @@ uint binAssign(uint size) {
 uint prefixSumBins() {
     barrier();
     uint sum2=0;
-    if(gl_LocalInvocationID.x==0) {
-        for(uint i=0; i<BINS;i++){
-            uint z=binSizes[CONFLICT_FREE_OFFSET(i)];
-            binSizes[CONFLICT_FREE_OFFSET(i)]=sum2;
+    if (gl_LocalInvocationID.x==0) {
+        for (uint i=0; i<BINS;i++){
+            uint z=binSizes[(i)];
+            binSizes[(i)]=sum2;
             sum2+=z;
         }
     }
@@ -68,54 +65,53 @@ uint prefixSumBins() {
     return sum2;
 
 
-	uint localSize = BINS;
+    uint localSize = BINS;
     uint halfsize = localSize / 2;
     uint lID = gl_LocalInvocationID.x;
     uint rlID = halfsize - gl_LocalInvocationID.x - 1;
 
-	// Perform up-sweep
+    // Perform up-sweep
     uint stride = 1;
     // loop until all reductions are performed
-    while(stride <= halfsize) {
+    while (stride <= halfsize) {
         // threads that participate in this reduction step
         if (rlID % stride == 0) {
-            binSizes[CONFLICT_FREE_OFFSET(lID * 2 + 1)] = binSizes[CONFLICT_FREE_OFFSET(2 * lID - stride + 1)] + binSizes[CONFLICT_FREE_OFFSET(2 * lID + 1)];
+            binSizes[(lID * 2 + 1)] = binSizes[(2 * lID - stride + 1)] + binSizes[(2 * lID + 1)];
         }
         stride = stride * 2;
-        
+
         // sync with other threads
         barrier();
     }
 
- 	// Set the last element to 0 and save sum
+    // Set the last element to 0 and save sum
     barrier();
-    uint sum = binSizes[CONFLICT_FREE_OFFSET(localSize - 1)];
+    uint sum = binSizes[(localSize - 1)];
     if (lID == 0) {
-        binSizes[CONFLICT_FREE_OFFSET(localSize - 1)] = 0;
+        binSizes[(localSize - 1)] = 0;
     }
     barrier();
 
-    
 
     // Perform down-sweep
     // loop until all (but last) propagations are performed
     stride = halfsize;
-    while(stride > 0) {
+    while (stride > 0) {
         barrier();
         bool part = rlID % stride == 0;
         uint upperLeftValue;
         if (part) {
             // threads that participate in this propagations step
-            upperLeftValue = binSizes[CONFLICT_FREE_OFFSET(lID * 2 + 1 - stride)];
+            upperLeftValue = binSizes[(lID * 2 + 1 - stride)];
         }
         barrier();
-        if(part){
+        if (part){
             // left child
-            binSizes[CONFLICT_FREE_OFFSET(lID * 2 + 1 - stride)] = binSizes[CONFLICT_FREE_OFFSET(lID * 2 + 1)];
+            binSizes[(lID * 2 + 1 - stride)] = binSizes[(lID * 2 + 1)];
             // right child
-            binSizes[CONFLICT_FREE_OFFSET(lID * 2 + 1)] = binSizes[CONFLICT_FREE_OFFSET(lID * 2 + 1)] + upperLeftValue;
+            binSizes[(lID * 2 + 1)] = binSizes[(lID * 2 + 1)] + upperLeftValue;
         }
-        
+
         // half the stride for next layer
         stride = stride / 2;
     }
@@ -124,81 +120,80 @@ uint prefixSumBins() {
 
 void main() {
     uint gID = gl_GlobalInvocationID.x;
-	uint wSize = gl_WorkGroupSize.x;
-	uint wID = gl_WorkGroupID.x;
-	uint lID = gl_LocalInvocationID.x;
+    uint wSize = gl_WorkGroupSize.x;
+    uint wID = gl_WorkGroupID.x;
+    uint lID = gl_LocalInvocationID.x;
 
-    
+
     #ifdef SHUFFLE
     shuffle(wID);
     #endif
 
     // initialize bin counter shared variable to zero
-    binSizes[CONFLICT_FREE_OFFSET(lID)] = 0;
-    binSizes[CONFLICT_FREE_OFFSET(lID + wSize)] = 0;
+    binSizes[(lID)] = 0;
+    binSizes[(lID + wSize)] = 0;
 
     barrier();
 
-	// set bin sizes and local offsets
-	//for(uint index = lID; index < BUCKETS; index+=wSize) {
+    // set bin sizes and local offsets
+    //for(uint index = lID; index < BUCKETS; index+=wSize) {
     //for(uint index = 0; lID == 0 && index < BUCKETS; index+=1) {
-    for(int index = int(BUCKETS) - 1; lID == 0 && index >-1; index-=1) {
+    for (int index = int(BUCKETS) - 1; lID == 0 && index >-1; index-=1) {
         #ifdef SHUFFLE
         uint index2 = permutationData[index];
         #else
         uint index2 = index;
         #endif
 
-		uint size = bucketSizes[(index2 + wID * BUCKETS)];
+        uint size = bucketSizes[(index2 + wID * BUCKETS)];
         //atomicMax(debug[0], size);
         bucketSizesLocal[index2] = size;
-		if (size > 0) {
-			//uint cnt = atomicAdd(binSizes[CONFLICT_FREE_OFFSET(binAssign(size))], 1);
-			uint cnt = binSizes[CONFLICT_FREE_OFFSET(binAssign(size))];
-            binSizes[CONFLICT_FREE_OFFSET(binAssign(size))]+=1;
+        if (size > 0) {
+            //uint cnt = atomicAdd(binSizes[(binAssign(size))], 1);
+            uint cnt = binSizes[(binAssign(size))];
+            binSizes[(binAssign(size))]+=1;
             bucketCntInBin[index2] = cnt;
-		}
-	}
+        }
+    }
 
 
     barrier();
 
-    
 
     // write the histogram of the bucket sizes to a buffer
-    histo[lID + wID * BINS] = binSizes[CONFLICT_FREE_OFFSET(lID)];
-    histo[lID + wSize + wID * BINS] = binSizes[CONFLICT_FREE_OFFSET(lID + wSize)];
+    histo[lID + wID * BINS] = binSizes[(lID)];
+    histo[lID + wSize + wID * BINS] = binSizes[(lID + wSize)];
 
     // make a copy
-    binSizesCopy[CONFLICT_FREE_OFFSET(lID)] = binSizes[CONFLICT_FREE_OFFSET(lID)];
-    binSizesCopy[CONFLICT_FREE_OFFSET(lID + wSize)] = binSizes[CONFLICT_FREE_OFFSET(lID + wSize)];
+    binSizesCopy[(lID)] = binSizes[(lID)];
+    binSizesCopy[(lID + wSize)] = binSizes[(lID + wSize)];
 
     // offsets of bins
     prefixSumBins();
-    
+
     barrier();
 
 
     // write back the sort permutation to rearrange later
     uint offsetOfPartition = wID * BUCKETS;
-	for(uint index = lID; index < BUCKETS; index+=wSize) {
-		uint size = bucketSizesLocal[index];
-		if (size > 0) {
-			uint offsetInBin = bucketCntInBin[index];
-            uint offsetOfBin = binSizes[CONFLICT_FREE_OFFSET(binAssign(size))];
+    for (uint index = lID; index < BUCKETS; index+=wSize) {
+        uint size = bucketSizesLocal[index];
+        if (size > 0) {
+            uint offsetInBin = bucketCntInBin[index];
+            uint offsetOfBin = binSizes[(binAssign(size))];
             bucketPermutation[offsetInBin + offsetOfBin + offsetOfPartition] = index;
-		}
-	}
+        }
+    }
 
     barrier();
 
     // restore copy and multiply with actual size
-    binSizes[CONFLICT_FREE_OFFSET(lID)] = binSizesCopy[CONFLICT_FREE_OFFSET(lID)] * (BINS - lID); 
-    binSizes[CONFLICT_FREE_OFFSET(lID + wSize)] = binSizesCopy[CONFLICT_FREE_OFFSET(lID + wSize)] * (BINS - (lID + wSize));
+    binSizes[(lID)] = binSizesCopy[(lID)] * (BINS - lID);
+    binSizes[(lID + wSize)] = binSizesCopy[(lID + wSize)] * (BINS - (lID + wSize));
 
     barrier();
 
-	// prefix sum the bins
+    // prefix sum the bins
     uint sum = prefixSumBins();
     if (lID == 0) {
         partitionSizes[gl_WorkGroupID.x] = sum;
@@ -207,12 +202,12 @@ void main() {
     barrier();
 
     // write back the offsets
-	for(uint index = lID; index < BUCKETS; index+=wSize) {
-		uint size = bucketSizesLocal[index];
-		if (size > 0) {
-			uint offsetInBin = bucketCntInBin[index] * size;
-            uint offsetOfBin = binSizes[CONFLICT_FREE_OFFSET(binAssign(size))];
+    for (uint index = lID; index < BUCKETS; index+=wSize) {
+        uint size = bucketSizesLocal[index];
+        if (size > 0) {
+            uint offsetInBin = bucketCntInBin[index] * size;
+            uint offsetOfBin = binSizes[(binAssign(size))];
             bucketSizes[index + wID * BUCKETS] = offsetInBin + offsetOfBin;
-		}
-	}
+        }
+    }
 }

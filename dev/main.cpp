@@ -1,8 +1,7 @@
 #include "mphf_builder.h"
-#include "encoders/mono_encoders.hpp"
-#include "encoders/ortho_encoder_dual.hpp"
-
-
+#include "encoders/pilotEncoders/mono_encoders.hpp"
+#include "encoders/pilotEncoders/ortho_encoder_dual.hpp"
+#include "encoders/partitionOffsetEnocders/direct_partition_offset_encoder.hpp"
 
 
 using namespace pthash;
@@ -11,8 +10,7 @@ using namespace pthash;
 #define DO_NOT_OPTIMIZE(value) asm volatile("" : : "r,m"(value) : "memory")
 
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
     std::cout.precision(3);
     std::cout << std::fixed;
 
@@ -22,11 +20,11 @@ int main(int argc, char* argv[])
     App app(config);
     app.debugInfo();
 
-    size_t size=1e7;
+    size_t size = 1e4;
 
     MPHFbuilder builder(app, MPHFconfig(7.f, 1024));
 
-    MPHF<mono_encoder<compact>, compact> f;
+    MPHF<mono_encoder<compact>, direct_partition_encoder<compact>> f;
 
     std::vector<Key> keys;
     keys.reserve(size);
@@ -36,7 +34,7 @@ int main(int argc, char* argv[])
     std::uniform_int_distribution<uint32_t> dis;
 
     for (size_t i = 0; i < size; ++i) {
-        keys.push_back({ dis(gen),dis(gen),dis(gen),dis(gen) });
+        keys.push_back({dis(gen), dis(gen), dis(gen), dis(gen)});
     }
 
     builder.build(keys, f);
@@ -44,7 +42,7 @@ int main(int argc, char* argv[])
     std::vector<bool> taken(keys.size(), false);
     for (size_t i = 0; i < keys.size(); i++) {
         size_t hash = f(keys.at(i));
-        if (hash > keys.size()) {
+        if (hash >= keys.size()) {
             std::cerr << "Out of range!" << std::endl;
             exit(1);
         }
@@ -54,5 +52,5 @@ int main(int argc, char* argv[])
         }
         taken[hash] = true;
     }
-    std::cout<<"valid for "<< keys.size()<<std::endl;
+    std::cout << "valid for " << keys.size() << std::endl;
 }

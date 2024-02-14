@@ -8,10 +8,6 @@ uint lowbias32(uint x)
     return x;
 }
 
-uint rand(uint seed, uint max) {
-    return lowbias32(seed) % max;
-}
-
 uint hash(uint key, uint pilot) {
     key ^= pilot;
     key = ((key >> 16) ^ key) * 0x45d9f3b;

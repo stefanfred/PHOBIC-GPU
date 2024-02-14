@@ -29,7 +29,7 @@ int main() {
 
     for (uint64_t run = 0; run != runs; ++run) {
         t.start();
-        for (auto i : queries) {
+        for (auto i: queries) {
             do_not_optimize_away(sequence[i]);
         }
         t.stop();
@@ -49,7 +49,7 @@ int main() {
 
     for (uint64_t run = 0; run != runs / 10; ++run) {
         t.start();
-        for (auto i : queries) {
+        for (auto i: queries) {
             do_not_optimize_away(sequence[i]);
         }
         t.stop();

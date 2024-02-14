@@ -1,4 +1,5 @@
 #pragma once
+
 #include <cmath>
 #include "shader_constants.h"
 #include "spline.h"
@@ -13,40 +14,40 @@
 
 struct MPHFconfig {
 private:
-	std::vector<uint32_t> fulcrums;
+    std::vector<uint32_t> fulcrums;
 
 public:
-	uint32_t partitionSize;
-	uint32_t bucketCountPerPartition;
-	uint32_t sortingBins;
+    uint32_t partitionSize;
+    uint32_t bucketCountPerPartition;
+    uint32_t sortingBins;
 
 
-	MPHFconfig(float averageBucketSize = 8.0, uint32_t partitionSize = 1024, Bucketer *bucketer = new CSVBucketer("bucketMappings/optimizedBucketMapping.csv")) :
-		partitionSize(partitionSize),
-		sortingBins(256),
-		bucketCountPerPartition(uint32_t(round(partitionSize / averageBucketSize))) {
-		setBucketer(bucketer);
-	}
+    MPHFconfig(float averageBucketSize = 8.0, uint32_t partitionSize = 1024,
+               Bucketer *bucketer = new CSVBucketer("bucketMappings/optimizedBucketMapping.csv")) :
+            partitionSize(partitionSize),
+            sortingBins(256),
+            bucketCountPerPartition(uint32_t(round(partitionSize / averageBucketSize))) {
+        setBucketer(bucketer);
+    }
 
-	void setBucketer(Bucketer *bucketer) {
-		// initialize fulcrums for bucket assignment
+    void setBucketer(Bucketer *bucketer) {
+        // initialize fulcrums for bucket assignment
 
-		for (size_t xi = 0; xi < FULCS_INTER; xi++) {
-			double x = double(xi) / double(FULCS_INTER - 1);
-			double y = bucketer->getBucketRel(x);
-			uint32_t fulcV = uint32_t(y * double(bucketCountPerPartition) * double(1 << 16));
-			fulcrums.push_back(fulcV);
-		}
-	}
+        for (size_t xi = 0; xi < FULCS_INTER; xi++) {
+            double x = double(xi) / double(FULCS_INTER - 1);
+            double y = bucketer->getBucketRel(x);
+            uint32_t fulcV = uint32_t(y * double(bucketCountPerPartition) * double(1 << 16));
+            fulcrums.push_back(fulcV);
+        }
+    }
 
 
+    const std::vector<uint32_t> &getFulcs() const {
+        return fulcrums;
+    }
 
-	const std::vector<uint32_t> &getFulcs() const {
-		return fulcrums;
-	}
-
-	uint32_t partitionMaxSize() const {
+    uint32_t partitionMaxSize() const {
         // ToDo use Poission quantil
-		return partitionSize + partitionSize / 2;
-	}
+        return partitionSize + partitionSize / 2;
+    }
 };
