@@ -1,7 +1,4 @@
 void initial_pos(uint globalBucketStartPos, uint pilot, uint partitionSize, uint size) {
-    if(lID==0) {
-        localCollision = false;
-    }
     if(size==1) {
         if(lID==0) {
             initialPos[0] = hash64(globalBucketStartPos, pilot)
@@ -9,6 +6,10 @@ void initial_pos(uint globalBucketStartPos, uint pilot, uint partitionSize, uint
         }
         barrier();
         return;
+    }
+
+    if(lID==0) {
+        localCollision = false;
     }
 
     for(uint index = lID; index < MAX_PARTITION_SIZE / 32; index+= wSize) {

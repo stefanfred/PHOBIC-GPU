@@ -46,17 +46,9 @@ shared uint sharedOffset;
 
 #include "search_strat_initial.glsl"
 
-
-
 bool searchBruteForce(uint size, uint partitionSize, uint globalBucketStartPos, uint bucketCnt, uint freeCnt) {
 	#include "search_stratB0.glsl"
 }
-
-
-#ifdef PILOT_LIMIT
-#include "search_stratC.glsl"
-#endif
-
 
 
 bool start(in uint partitionSize) {
@@ -84,7 +76,7 @@ bool start(in uint partitionSize) {
 		uint size = BINS - i;
 		uint cnt = bucketSizeHisto[i + wID * BINS];
 		for(uint j = 0; j < cnt; j++) {
-			
+
 			partitionSizeCnt+=size;
 			bool succ = searchBruteForce(size, partitionSize, globalBucketStartPos, bucketCnt, freeCnt);
 			
@@ -100,6 +92,7 @@ bool start(in uint partitionSize) {
 		uint globalIndex = wID + bucketPermutation[index + wID * BUCKETS] * wCnt;
 		uint pilotV = pilotsFound[index];
 		result[globalIndex] = pilotV;
+		debug[globalIndex] = pilotV;
 	}
 
 	return true;

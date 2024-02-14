@@ -13,7 +13,7 @@ static ShaderModule createShaderModule(const vk::Device& device, const std::stri
 	createInfo.sType = vk::StructureType::eShaderModuleCreateInfo;
 	createInfo.codeSize = code.size();
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
-	
+
 	vk::ShaderModule m = CHECK(device.createShaderModule(createInfo), "failed to create shader module");
 	return ShaderModule(m, flagBits);
 }
@@ -47,10 +47,4 @@ void Shader::destroy(const vk::Device& device) {
 	for (const ShaderModule& m : modules) {
 		device.destroyShaderModule(m.handle);
 	}
-}
-
-
-void Shader::recompileShader(const char* shaderPath) {
-	const std::string shaderPathPrefix = "shaders/" + std::string(shaderPath)+".comp";
-	system(("glslc --target-env=vulkan1.2 -o "+ shaderPathPrefix+".spv "+ shaderPathPrefix+"").c_str());
 }

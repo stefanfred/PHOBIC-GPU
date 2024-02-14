@@ -21,19 +21,19 @@ public:
 	uint32_t sortingBins;
 
 
-	MPHFconfig(float averageBucketSize = 8.0, uint32_t partitionSize = 1024, const Bucketer &bucketer = Theo1Bucketer()) :
+	MPHFconfig(float averageBucketSize = 8.0, uint32_t partitionSize = 1024, Bucketer *bucketer = new CSVBucketer("bucketMappings/optimizedBucketMapping.csv")) :
 		partitionSize(partitionSize),
 		sortingBins(256),
 		bucketCountPerPartition(uint32_t(round(partitionSize / averageBucketSize))) {
 		setBucketer(bucketer);
 	}
 
-	void setBucketer(const Bucketer &bucketer) {
+	void setBucketer(Bucketer *bucketer) {
 		// initialize fulcrums for bucket assignment
 
 		for (size_t xi = 0; xi < FULCS_INTER; xi++) {
 			double x = double(xi) / double(FULCS_INTER - 1);
-			double y = bucketer.getBucketRel(x);
+			double y = bucketer->getBucketRel(x);
 			uint32_t fulcV = uint32_t(y * double(bucketCountPerPartition) * double(1 << 16));
 			fulcrums.push_back(fulcV);
 		}
@@ -46,6 +46,7 @@ public:
 	}
 
 	uint32_t partitionMaxSize() const {
+        // ToDo use Poission quantil
 		return partitionSize + partitionSize / 2;
 	}
 };

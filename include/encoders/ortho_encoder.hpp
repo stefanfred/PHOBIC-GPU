@@ -3,7 +3,7 @@
 namespace pthash {
 
 template <typename BaseEncoder>
-struct orthoEncoder {
+struct ortho_encoder {
 
     template <typename Iterator>
     void encode(Iterator begin, uint64_t partitions, uint64_t buckets) {

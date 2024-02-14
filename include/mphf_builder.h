@@ -9,65 +9,14 @@
 #include "mphf_config.h"
 #include "search_stage.h"
 #include "mphf.hpp"
+#include "mphf_build_invocation.h"
 
 
 class MPHFbuilder {
+
+    template <typename Mphf>
+    friend class BuildInvocation;
 private:
-	class BuildInvocation {
-		MPHFInterface* f;
-		const std::vector<Key>& keys;
-		uint32_t size;
-		uint32_t partitions;
-		MPHFconfig config;
-		App& app;
-		MPHFbuilder& builder;
-
-		CommandBuffer* cb;
-		uint32_t totalBucketCount;
-
-
-		BufferAllocation debugBuffer;
-
-		BufferAllocation keysSrc;
-
-		BufferAllocation keysLowerDst;
-
-		BufferAllocation bucketSizes;
-		BufferAllocation bucketSizeHistogram;
-		BufferAllocation keyOffsets;
-		BufferAllocation partitionsSizes;
-		BufferAllocation partitionsOffsets;
-		BufferAllocation bucketPermuatation;
-		BufferAllocation pilotsDevice;
-		BufferAllocation pilotsHost;
-		BufferAllocation fulcrums;
-
-		BufferAllocation dictKeys;
-		BufferAllocation maxPilot;
-
-		BufferAllocation pilotLimitPilotCompact;
-		BufferAllocation pilotLimitIterations;
-		BufferAllocation pilotLimitMaxIter;
-		BufferAllocation pilotLimitIterCompact;
-
-		PrefixSumData ppsData;
-
-		std::vector<uint32_t> keysUpperHost;
-		std::vector<uint32_t> keysLowerHost;
-		std::vector<uint32_t> partitionsOffsetsHost;
-
-	public:
-		BuildInvocation(MPHFInterface* f, const std::vector<Key>& keys, uint32_t size, MPHFconfig config, App& app, MPHFbuilder& builder) : f(f), keys(keys), size(size), config(config), app(app), builder(builder) {
-			size = keys.size();
-			partitions = (size + config.partitionSize - 1) / config.partitionSize;
-		}
-
-		void destroy();
-		void allocateBuffers();
-		void addGpuCommands();
-		bool run();
-	};
-
 	MPHFconfig config;
 	App& app;
 
@@ -78,8 +27,22 @@ private:
 	PrefixSumStage partitionOffsetPPSStage;
 	PartitionOffsetStage applyPartitionOffsetStage;
 public:
-	MPHFbuilder(App& app, MPHFconfig config);
-	bool build(const std::vector<Key>& keys, MPHFInterface* f);
-	bool buildRandomized(size_t size, MPHFInterface* f, uint64_t seed);
+    MPHFbuilder(App& app, MPHFconfig config):
+            config(config),
+            app(app),
+            bucketSizesStage(BucketSizesStage(app, 32)),
+            bucketSortStage(BucketSortStage(app, config.bucketCountPerPartition, config.sortingBins)),
+            redistributeKeysStage(RedistributeKeysStage(app, 32)),
+            searchStage(SearchStage(app, 32, config)),
+            partitionOffsetPPSStage(PrefixSumStage(app, 32, 32)),
+            applyPartitionOffsetStage(PartitionOffsetStage(app, 32, config.bucketCountPerPartition))
+    {}
 
+
+    template <typename Mphf>
+    void build(const std::vector<Key> &keys, Mphf& f) {
+        BuildInvocation<Mphf> bd(f, keys, keys.size(), config, app, this);
+        bd.run();
+        bd.destroy();
+    }
 };

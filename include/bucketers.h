@@ -8,7 +8,7 @@
 
 class Bucketer {
 public:
-	double getBucketRel(double relInput) const {return 0;};
+	virtual double getBucketRel(double relInput) const = 0;
 };
 
 class ConstantBucketer : public Bucketer {
@@ -36,55 +36,52 @@ public:
 		} else {
 			return 0.3 + (relInput - 0.6) / 0.4 * 0.7;
 		}
-		return relInput;
 	}
 };
 
-class InterpolationBucketer : public Bucketer {
+class CSVBucketer : public Bucketer {
 private:
-	tk::spline splineF;
+    tk::spline splineF;
 public:
-	InterpolationBucketer(std::vector<double> x, std::vector<double> y) : splineF(tk::spline(x, y)) {}
+    CSVBucketer(std::string path) {
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            std::cerr << "Error opening the file." << std::endl;
+        }
 
-	InterpolationBucketer(std::string path) {
-		std::ifstream file(path);
-		if (!file.is_open()) {
-			std::cerr << "Error opening the file." << std::endl;
-		}
+        std::vector<double> x;
+        std::vector<double> y;
 
-		std::vector<double> x;
-		std::vector<double> y;
-
-		std::string line;
-		while (std::getline(file, line)) {
-			std::stringstream ss(line);
-			std::string cell;
+        std::string line;
+        while (std::getline(file, line)) {
+            std::stringstream ss(line);
+            std::string cell;
 
 
-			// Read the first column
-			if (std::getline(ss, cell, ',')) {
-				x.push_back(std::stod(cell));
-			} else {
-				std::cerr << "Error reading the first column." << std::endl;
-			}
+            // Read the first column
+            if (std::getline(ss, cell, ',')) {
+                x.push_back(std::stod(cell));
+            } else {
+                std::cerr << "Error reading the first column." << std::endl;
+            }
 
-			// Read the second column
-			if (std::getline(ss, cell, ',')) {
-				y.push_back(std::stod(cell));
-			} else {
-				std::cerr << "Error reading the second column." << std::endl;
-			}
-		}
-		InterpolationBucketer(x,y);
-	}
+            // Read the second column
+            if (std::getline(ss, cell, ',')) {
+                y.push_back(std::stod(cell));
+            } else {
+                std::cerr << "Error reading the second column." << std::endl;
+            }
+        }
+        splineF = tk::spline(x, y);
+    }
 
-	double getBucketRel(double relInput) const  {
-		if (relInput > 0.9999) {
-			return 1.0;
-		}
-		if (relInput < 0.0001) {
-			return 0.0;
-		}
-		return splineF(relInput);
-	}
+    double getBucketRel(double relInput) const {
+        if (relInput > 0.9999) {
+            return 1.0;
+        }
+        if (relInput < 0.0001) {
+            return 0.0;
+        }
+        return splineF(relInput);
+    }
 };

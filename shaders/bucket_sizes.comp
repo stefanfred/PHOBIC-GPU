@@ -31,6 +31,7 @@ void main() {
 		offset = offset<<8;
 		if(index < p.size) {
 			uint o = atomicAdd(counters[assignBucketAbsolute(keys[index].partitioner, keys[index].bucketer, p.partitionCount, p.bucketCount)], 1);
+
 			offset = offset | o;
 		}
 		index += wSize;

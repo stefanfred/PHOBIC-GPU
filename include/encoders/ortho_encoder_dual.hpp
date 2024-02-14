@@ -5,7 +5,7 @@
 namespace pthash {
 
 template <typename BaseEncoder1, typename BaseEncoder2, int num, int dom>
-struct orthoEncoderDual {
+struct ortho_encoder_dual {
 
     template <typename Iterator>
     void encode(Iterator begin, uint64_t partitions, uint64_t buckets) {
@@ -27,7 +27,7 @@ struct orthoEncoderDual {
 
 
     static std::string name() {
-        return "OrthoEncoder<"+BaseEncoder1::name()+", "+BaseEncoder2::name()+">";
+        return "OrthoEncoderDual<"+BaseEncoder1::name()+", "+BaseEncoder2::name()+", "+num+", "+dom+"+>";
     }
 
     uint64_t num_bits() const {
@@ -42,7 +42,7 @@ struct orthoEncoderDual {
 
 private:
     uint64_t buckets1;
-    orthoEncoder<BaseEncoder1> encoder1;
-    orthoEncoder<BaseEncoder2> encoder2;
+    ortho_encoder<BaseEncoder1> encoder1;
+    ortho_encoder<BaseEncoder2> encoder2;
 };
 }

@@ -14,30 +14,30 @@ void AppConfiguration::addRequiredExtensions(const std::vector<const char*>& ext
 }
 
 static const std::vector<const char*> DEBUG_MODE_VALIDATION_LAYERS = {
-    "VK_LAYER_KHRONOS_validation"
+        "VK_LAYER_KHRONOS_validation"
 };
 
 static const std::vector<const char*> REQUIRED_DEVICE_EXTENSIONS = {
-    "VK_EXT_pipeline_creation_feedback"
+        "VK_EXT_pipeline_creation_feedback"
 };
 
 static bool checkValidationLayerSupport(const std::vector<const char*>& validationLayers) {
     // first we count the number of available validation layers
     uint32_t layerCount;
     CHECK(vk::enumerateInstanceLayerProperties(&layerCount, nullptr),
-        "unable to count instance layer properties!");
+          "unable to count instance layer properties!");
 
     // then we allocate enough data and actually list them
     std::vector<vk::LayerProperties> availableLayers(layerCount);
     CHECK(vk::enumerateInstanceLayerProperties(&layerCount, availableLayers.data()),
-        "unable to fetch instance layer properties!");
+          "unable to fetch instance layer properties!");
 
     // at the end we check whether all requested validation layers are actually available
     for (const char* layerName : validationLayers) {
-        if (std::find_if(availableLayers.begin(), availableLayers.end(), 
-            [layerName](vk::LayerProperties layerProperties) {
-                return strcmp(layerProperties.layerName, layerName) == 0;
-            }) == availableLayers.end()) {
+        if (std::find_if(availableLayers.begin(), availableLayers.end(),
+                         [layerName](vk::LayerProperties layerProperties) {
+                             return strcmp(layerProperties.layerName, layerName) == 0;
+                         }) == availableLayers.end()) {
             // layer not found
             return false;
         }
@@ -49,11 +49,11 @@ static bool checkValidationLayerSupport(const std::vector<const char*>& validati
 static bool checkDeviceExtensionSupport(const vk::PhysicalDevice& pDevice, const std::vector<const char*>& deviceExtensions) {
     uint32_t extensionCount;
     CHECK(pDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, nullptr),
-            "unable to count device extension properties!");
+          "unable to count device extension properties!");
 
     std::vector<vk::ExtensionProperties> availableExtensions(extensionCount);
-    CHECK(pDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, availableExtensions.data()), 
-            "unable to fetch device extension properties!");
+    CHECK(pDevice.enumerateDeviceExtensionProperties(nullptr, &extensionCount, availableExtensions.data()),
+          "unable to fetch device extension properties!");
 
     std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
@@ -69,10 +69,10 @@ static vk::Instance createInstance(const AppConfiguration& config) {
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = config.appName;
-    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.applicationVersion = VK_API_VERSION_1_3;
     appInfo.pEngineName = config.appName;
-    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_2;
+    appInfo.engineVersion = VK_API_VERSION_1_3;
+    appInfo.apiVersion = VK_API_VERSION_1_3;
 
     // specify global extensions and validation layers
     VkInstanceCreateInfo createInfo{};
@@ -83,17 +83,17 @@ static vk::Instance createInstance(const AppConfiguration& config) {
     // beginning with the 1.3.216 Vulkan SDK, the VK_KHR_PORTABILITY_subset extension is mandatory,
     // so we also add it
     std::vector<const char*> extensions( config.requiredExtensions );
-    //extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
-    //createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
     // optionally enable validation layers
     if (config.debugMode) {
         // ensure that there is support for all requested validation layers
         CHECK(checkValidationLayerSupport(DEBUG_MODE_VALIDATION_LAYERS),
-            "no validation layer support");
+              "no validation layer support");
 
         createInfo.enabledLayerCount = static_cast<uint32_t>(DEBUG_MODE_VALIDATION_LAYERS.size());
         createInfo.ppEnabledLayerNames = DEBUG_MODE_VALIDATION_LAYERS.data();
@@ -112,7 +112,7 @@ static vk::Instance createInstance(const AppConfiguration& config) {
 const QueueFamilyIndices findQueueFamilies(const vk::PhysicalDevice& pDevice) {
     QueueFamilyIndices indices;
     // Logic to find queue family indices to populate struct with
-    
+
     uint32_t queueFamilyCount = 0;
     pDevice.getQueueFamilyProperties(&queueFamilyCount, nullptr);
 
@@ -172,15 +172,15 @@ static vk::PhysicalDevice pickPhysicalDevice(const vk::Instance& instance) {
     // choose a graphics card to use suitable for our rendering purpose
     uint32_t deviceCount = 0;
     CHECK(instance.enumeratePhysicalDevices(&deviceCount, nullptr),
-        "failed to enumerate physical devices!");
-    
+          "failed to enumerate physical devices!");
+
     // we need at least one GPU to proceed
     CHECK(deviceCount != DEVICE_NOT_SUITABLE, "no GPU with vulkan support!");
 
     // fetch all GPUs
     std::vector<vk::PhysicalDevice> devices(deviceCount);
     CHECK(instance.enumeratePhysicalDevices(&deviceCount, devices.data()),
-        "failed to list physical devices!");
+          "failed to list physical devices!");
 
     // find suitable GPU
     vk::PhysicalDevice pDevice;
@@ -206,8 +206,8 @@ static vk::Device createLogicalDevice(
     const float queuePriority = 1.0f;
 
     const std::set<uint32_t> queueIndicesSet = {
-        indices.transferFamily.value(),
-        indices.computeFamily.value()
+            indices.transferFamily.value(),
+            indices.computeFamily.value()
     };
 
     // the actual number of created queues is between 1 and 3
@@ -278,7 +278,7 @@ App::App(AppConfiguration& config)
     computeCommandPool = createCommandPool(device, indices.computeFamily.value());
 
     memoryAlloc = MemoryAllocator(pDevice, device, indices,
-        transferQueue, transferCommandPool);
+                                  transferQueue, transferCommandPool);
 
     descrAlloc = DescriptorAllocator(device);
 }
@@ -300,14 +300,14 @@ App::~App() {
     instance.destroy();
 }
 
-void App::debugInfo() {    
+void App::debugInfo() {
     // fetch features and properties of device
     vk::PhysicalDeviceProperties deviceProperties;
     pDevice.getProperties(&deviceProperties);
-    
+
     std::cerr << "Device: " << deviceProperties.deviceName << std::endl;
-    std::cerr << "Queues: C = " << indices.computeFamily.has_value() 
-                    << ", T = " << indices.transferFamily.has_value() << std::endl;
+    std::cerr << "Queues: C = " << indices.computeFamily.has_value()
+              << ", T = " << indices.transferFamily.has_value() << std::endl;
 }
 
 const Shader* App::loadShader(const char* shaderName) {
@@ -321,12 +321,12 @@ CommandBuffer* App::createCommandBuffer() {
 
 
 const ShaderStage* App::computeStage(
-    const Shader* shader,
-    const std::vector<std::vector<vk::DescriptorSetLayoutBinding>>& bindings,
-    const std::vector<vk::PushConstantRange>& pushRanges,
-    const std::vector<vk::SpecializationMapEntry> specMap,
-    const void* specData,
-    const uint32_t specDataSize) {
+        const Shader* shader,
+        const std::vector<std::vector<vk::DescriptorSetLayoutBinding>>& bindings,
+        const std::vector<vk::PushConstantRange>& pushRanges,
+        const std::vector<vk::SpecializationMapEntry> specMap,
+        const void* specData,
+        const uint32_t specDataSize) {
 
     const std::vector<vk::DescriptorSetLayout> layouts = DescriptorAllocator::createLayouts(device, bindings);
 

@@ -1,28 +1,29 @@
 cmake_minimum_required(VERSION 3.16)
 set(CMAKE_CXX_STANDARD 17)
 project(MPHF)
- 
+
 
 function(add_shader TARGET SHADER)
+    find_program(GLSLC glslc)
 
-    set(current-shader-path ${CMAKE_CURRENT_SOURCE_DIR}/${SHADER})   
-    set(current-shader-dir ${CMAKE_CURRENT_SOURCE_DIR}/shaders)   
+    set(current-shader-path ${CMAKE_CURRENT_SOURCE_DIR}/${SHADER})
+    set(current-shader-dir ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 
-    
+
     # compile shader binaries to binary directory
     set(current-output-path ${CMAKE_BINARY_DIR}/${SHADER}.spv)
-    
+
 
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
     get_filename_component(current-output-dir ${current-output-path} DIRECTORY)
     file(MAKE_DIRECTORY ${current-output-dir})
 
     add_custom_command(
-           OUTPUT ${current-output-path}
-           COMMAND glslc --target-env=vulkan1.3 -o ${current-output-path} ${current-shader-path}
-           DEPENDS ${current-shader-path}
-           IMPLICIT_DEPENDS CXX ${current-shader-dir}
-           VERBATIM)
+            OUTPUT ${current-output-path}
+            COMMAND ${GLSLC} --target-env=vulkan1.3 -o ${current-output-path} ${current-shader-path}
+            DEPENDS ${current-shader-path}
+            IMPLICIT_DEPENDS CXX ${current-shader-dir}
+            VERBATIM)
 
     # Make sure our build depends on this output.
     set_source_files_properties(${current-output-path} PROPERTIES GENERATED TRUE)
@@ -34,11 +35,8 @@ find_package(Vulkan REQUIRED)
 find_package(OpenMP)
 
 
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lm -ldl")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mbmi2 -msse4.2")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 
