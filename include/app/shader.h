@@ -23,6 +23,4 @@ public:
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages() const;
 
     void destroy(const vk::Device &device);
-
-    static void recompileShader(const char *shaderPath);
 };

@@ -1,6 +1,5 @@
 #version 450
-
-layout(local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
+#include "default_header.glsl"
 
 // Push constant
 layout(push_constant) uniform PushStruct {
@@ -67,7 +66,6 @@ uint prefixSumBins() {
 
     uint localSize = BINS;
     uint halfsize = localSize / 2;
-    uint lID = gl_LocalInvocationID.x;
     uint rlID = halfsize - gl_LocalInvocationID.x - 1;
 
     // Perform up-sweep
@@ -119,12 +117,6 @@ uint prefixSumBins() {
 }
 
 void main() {
-    uint gID = gl_GlobalInvocationID.x;
-    uint wSize = gl_WorkGroupSize.x;
-    uint wID = gl_WorkGroupID.x;
-    uint lID = gl_LocalInvocationID.x;
-
-
     #ifdef SHUFFLE
     shuffle(wID);
     #endif

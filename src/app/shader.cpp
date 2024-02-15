@@ -8,7 +8,6 @@
 static ShaderModule createShaderModule(const vk::Device &device, const std::string fileName,
                                        vk::ShaderStageFlagBits flagBits) {
     const std::vector<char> &code = readFile(fileName);
-
     vk::ShaderModuleCreateInfo createInfo{};
     createInfo.sType = vk::StructureType::eShaderModuleCreateInfo;
     createInfo.codeSize = code.size();

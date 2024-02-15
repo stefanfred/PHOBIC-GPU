@@ -74,5 +74,6 @@ public:
 #pragma omp task
         this->partitionOffsets.encode(partitionOffsets.begin(), config.partitionSize, partitions + 1);
         this->pilots.encode(pilots.begin(), partitions, config.bucketCountPerPartition);
+#pragma omp taskwait
     }
 };

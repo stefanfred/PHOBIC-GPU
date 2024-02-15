@@ -1,11 +1,8 @@
 #version 450
-
+#include "default_header.glsl"
 
 #define NUM_BANKS            32
 #define CONFLICT_FREE_OFFSET(n)  ((n) / NUM_BANKS + (n))
-
-
-layout(local_size_x_id = 0, local_size_y = 1, local_size_z = 1) in;
 
 layout(push_constant) uniform PushStruct {
     uint size;
@@ -22,10 +19,8 @@ void main()
 {
     uint localSize = 2 * gl_WorkGroupSize.x;
     uint halfsize = localSize / 2;
-    uint lID = gl_LocalInvocationID.x;
     // reversed index for convenience
     uint rlID = halfsize - gl_LocalInvocationID.x - 1;
-    uint gID = gl_GlobalInvocationID.x;
 
     if (rlID < 0) {
         // thread is out of bounds

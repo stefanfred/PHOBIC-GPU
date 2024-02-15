@@ -2,12 +2,13 @@
 #include <mphf_builder.h>
 #include <encoders/pilotEncoders/mono_encoders.hpp>
 #include <encoders/partitionOffsetEnocders/direct_partition_offset_encoder.hpp>
+#include <encoders/partitionOffsetEnocders/diff_partition_offset_encoder.hpp>
 #include <tlx/cmdline_parser.hpp>
 
 int main(int argc, char *argv[]) {
     std::cout.precision(3);
     std::cout << std::fixed;
-    size_t size = 1e4;
+    size_t size = 1e7;
 
     tlx::CmdlineParser cmd;
     cmd.add_bytes('n', "size", size, "Number of objects to construct with");
@@ -31,7 +32,7 @@ int main(int argc, char *argv[]) {
     }
 
     MPHFbuilder builder(app, MPHFconfig(7.f, 1024));
-    MPHF<mono_encoder<compact>, direct_partition_encoder<compact>> f;
+    MPHF<mono_encoder<compact>, diff_partition_encoder<compact>> f;
     auto beginConstruction = std::chrono::high_resolution_clock::now();
     builder.build(keys, f);
     unsigned long constructionDurationMs = std::chrono::duration_cast<std::chrono::milliseconds>(
