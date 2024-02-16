@@ -1,0 +1,24 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list https://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+          wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+          sudo apt-get update
+          sudo apt-get install --assume-yes --no-install-recommends ca-certificates build-essential cmake git vulkan-tools libvulkan-dev vulkan-validationlayers-dev vulkan-sdk
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Build
+        run: |
+          cmake -B ./build
+          cmake --build ./build --parallel
