@@ -58,6 +58,9 @@ endforeach ()
 
 file(COPY bucketMappings DESTINATION ${CMAKE_BINARY_DIR}) # include bucket mapping CSV files
 
+add_subdirectory(external/essentials)
+target_link_libraries(GpuPTHash PUBLIC ESSENTIALS)
+
 # ---------------------------- Benchmarks ----------------------------
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     add_executable(DEV dev/main.cpp)
