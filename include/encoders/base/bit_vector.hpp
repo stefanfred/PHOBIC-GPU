@@ -5,7 +5,7 @@
 
 #include "util.hpp"
 
-#include "essentials/include/essentials.hpp"
+#include <essentials.hpp>
 
 namespace gpupthash {
 

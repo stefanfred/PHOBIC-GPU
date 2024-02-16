@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(MPHF LANGUAGES CXX)
+project(GpuPTHash LANGUAGES CXX)
 
 if((CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
         AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
@@ -57,6 +57,9 @@ foreach (file ${files})
 endforeach ()
 
 file(COPY bucketMappings DESTINATION ${CMAKE_BINARY_DIR}) # include bucket mapping CSV files
+
+add_subdirectory(external/essentials)
+target_link_libraries(GpuPTHash PUBLIC ESSENTIALS)
 
 # ---------------------------- Benchmarks ----------------------------
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
