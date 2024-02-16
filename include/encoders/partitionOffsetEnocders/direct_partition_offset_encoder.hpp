@@ -2,7 +2,7 @@
 
 #include "encoders/base/encoders.hpp"
 
-namespace pthash {
+namespace gpupthash {
 
     template<typename BaseEncoder>
     struct direct_partition_encoder {

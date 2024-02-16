@@ -6,10 +6,14 @@
 
 #include "vulkan_api.h"
 #include "shader.h"
-#include "encoders/base/command_buffer.h"
+#include "command_buffer.h"
 #include "memory.h"
 #include "pipeline.h"
-#include "encoders/base/command_buffer.h"
+#include "command_buffer.h"
+
+
+
+
 
 enum AppEvent {
     eSwapChainRecreation
@@ -33,9 +37,13 @@ public:
     void destroy(const vk::Device &device);
 };
 
+
 struct AppConfiguration {
+#ifdef NDEBUG
     bool debugMode = false;
-    const char *appName = "";
+#else
+    bool debugMode = true;
+#endif
     std::vector<const char *> requiredExtensions;
 
     void addRequiredExtensions(const std::vector<const char *> &extensions);
@@ -46,7 +54,9 @@ private:
     QueueFamilyIndices indices;
     std::vector<Shader *> loadedShaders;
     std::vector<ShaderStage *> stages;
+    App();
 public:
+
     vk::Instance instance;
 
     vk::Device device;
@@ -61,7 +71,11 @@ public:
     DescriptorAllocator descrAlloc;
 
 public:
-    App(AppConfiguration &config);
+    static App &getInstance() {
+        static App appSingleton;
+        return appSingleton;
+    }
+
 
     ~App();
 

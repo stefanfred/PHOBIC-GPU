@@ -2,7 +2,7 @@
 
 #include "ortho_encoder.hpp"
 
-namespace pthash {
+namespace gpupthash {
 
     template<typename BaseEncoder1, typename BaseEncoder2, int num, int dom>
     struct ortho_encoder_dual {

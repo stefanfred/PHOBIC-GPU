@@ -2,7 +2,7 @@
 
 #include "encoders.hpp"
 
-namespace pthash {
+namespace gpupthash {
 
     template<typename BaseEncoder>
     struct linear_diff_encoder {

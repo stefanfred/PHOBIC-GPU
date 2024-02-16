@@ -1,5 +1,5 @@
-#include "encoders/base/command_buffer.h"
-#include "encoders/base/check.h"
+#include "app/command_buffer.h"
+#include "app/check.h"
 
 static vk::CommandBuffer allocatePrimaryBuffer(const vk::Device &device, const vk::CommandPool &commandPool) {
     vk::CommandBufferAllocateInfo allocInfo{};

@@ -5,7 +5,7 @@
 #include "compact_vector.hpp"
 
 
-namespace pthash {
+namespace gpupthash {
 
     template<bool encode_prefix_sum = false>
     struct ef_sequence {

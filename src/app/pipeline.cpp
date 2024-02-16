@@ -1,5 +1,5 @@
 #include "app/pipeline.h"
-#include "encoders/base/check.h"
+#include "app/check.h"
 
 
 PipelineBuilder::PipelineBuilder(const Shader *shader)

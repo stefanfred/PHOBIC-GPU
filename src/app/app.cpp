@@ -4,7 +4,7 @@
 
 #include "app/vulkan_api.h"
 #include "app/app.h"
-#include "encoders/base/check.h"
+#include "app/check.h"
 #include "app/shader.h"
 
 
@@ -68,10 +68,6 @@ static vk::Instance createInstance(const AppConfiguration &config) {
     // specify information about our application and its requirements
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = config.appName;
-    appInfo.applicationVersion = VK_API_VERSION_1_3;
-    appInfo.pEngineName = config.appName;
-    appInfo.engineVersion = VK_API_VERSION_1_3;
     appInfo.apiVersion = VK_API_VERSION_1_3;
 
     // specify global extensions and validation layers
@@ -262,7 +258,9 @@ static vk::CommandPool createCommandPool(const vk::Device &device, uint32_t inde
     return CHECK(device.createCommandPool(poolInfo), "failed to create command pool");
 }
 
-App::App(AppConfiguration &config) {
+App::App() {
+    AppConfiguration config;
+
     instance = createInstance(config);
     pDevice = pickPhysicalDevice(instance);
 

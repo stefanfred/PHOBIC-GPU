@@ -3,7 +3,7 @@
 #include "util.hpp"
 #include "bit_vector.hpp"
 
-namespace pthash {
+namespace gpupthash {
     namespace detail {
 
         template<typename WordGetter>

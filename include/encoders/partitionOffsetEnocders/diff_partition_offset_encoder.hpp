@@ -2,7 +2,7 @@
 
 #include "encoders/base/linear_diff_encoder.hpp"
 
-namespace pthash {
+namespace gpupthash {
 
     template<typename BaseEncoder>
     struct diff_partition_encoder {

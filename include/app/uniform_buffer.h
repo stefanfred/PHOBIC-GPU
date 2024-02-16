@@ -2,7 +2,7 @@
 
 #include "vulkan_api.h"
 #include "app/memory.h"
-#include "encoders/base/check.h"
+#include "check.h"
 
 template<typename BUFFER>
 class UniformBuffer {

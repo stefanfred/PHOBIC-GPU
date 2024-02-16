@@ -7,7 +7,7 @@
 
 #include "essentials/include/essentials.hpp"
 
-namespace pthash {
+namespace gpupthash {
 
     struct bit_vector_builder {
         bit_vector_builder(uint64_t size = 0, bool init = 0) : m_size(size) {

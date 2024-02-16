@@ -2,7 +2,7 @@
 
 #include "app/uniform_buffer.h"
 #include "app/descriptors.h"
-#include "encoders/base/check.h"
+#include "app/check.h"
 
 // TODO:
 // for each frame we create a set of descriptor pool

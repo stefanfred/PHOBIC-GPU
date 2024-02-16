@@ -1,6 +1,6 @@
 #pragma once
 
-namespace pthash {
+namespace gpupthash {
 
     template<typename BaseEncoder>
     struct ortho_encoder {

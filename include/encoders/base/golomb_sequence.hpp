@@ -8,7 +8,7 @@
 #include "compact_vector.hpp"
 
 
-namespace pthash {
+namespace gpupthash {
     struct golomb_sequence {
 
         template<typename Iterator>
@@ -66,8 +66,8 @@ namespace pthash {
             return m_low_bits.size();
         }
 
-        uint64_t num_bits() const {
-            return 8 * (m_high_bits.bytes() + m_high_bits_d1.bytes() + m_low_bits.bytes());
+        uint64_t bytes() const {
+            return m_high_bits.bytes() + m_high_bits_d1.bytes() + m_low_bits.bytes();
         }
 
         template<typename Visitor>

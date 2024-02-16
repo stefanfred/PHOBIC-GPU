@@ -5,7 +5,7 @@
 
 #include "essentials/include/essentials.hpp"
 
-namespace pthash {
+namespace gpupthash {
 
     struct compact_vector {
         template<typename Data>

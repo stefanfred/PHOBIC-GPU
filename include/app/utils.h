@@ -8,7 +8,7 @@
 
 #include "app/memory.h"
 #include "vulkan_api.h"
-#include "encoders/base/check.h"
+#include "check.h"
 #include "host_timer.h"
 
 #define CAST(a) static_cast<uint32_t>(a.size())

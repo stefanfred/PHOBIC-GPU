@@ -3,12 +3,44 @@
 #include "compact_vector.hpp"
 #include "ef_sequence.hpp"
 #include "sdc_sequence.hpp"
+#include "golomb_sequence.hpp"
 
 #include <vector>
 #include <unordered_map>
 #include <cassert>
 
-namespace pthash {
+namespace gpupthash {
+
+    struct golomb {
+        template<typename Iterator>
+        void encode(Iterator begin, uint64_t n) {
+            m_values.encode(begin, n);
+        }
+
+        static std::string name() {
+            return "golomb";
+        }
+
+        size_t size() const {
+            return m_values.size();
+        }
+
+        size_t num_bits() const {
+            return m_values.bytes() * 8;
+        }
+
+        uint64_t access(uint64_t i) const {
+            return m_values.access(i);
+        }
+
+        template<typename Visitor>
+        void visit(Visitor &visitor) {
+            visitor.visit(m_values);
+        }
+
+    private:
+        golomb_sequence m_values;
+    };
 
     struct compact {
         template<typename Iterator>

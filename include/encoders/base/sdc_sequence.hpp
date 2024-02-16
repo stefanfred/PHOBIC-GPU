@@ -3,7 +3,7 @@
 #include "encoders/base/bit_vector.hpp"
 #include "encoders/base/ef_sequence.hpp"
 
-namespace pthash {
+namespace gpupthash {
 
     struct sdc_sequence {
         sdc_sequence() : m_size(0) {}

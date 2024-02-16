@@ -6,7 +6,7 @@
 
 #endif
 
-namespace pthash::util {
+namespace gpupthash::util {
 
     inline uint8_t msb(uint64_t x) {
         assert(x);
