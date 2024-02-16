@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include "shader_constants.h"
-#include "spline.h"
+#include <spline.h>
 #include <numeric>
 #include <iostream>
 #include <fstream>

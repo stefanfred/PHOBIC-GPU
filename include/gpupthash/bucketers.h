@@ -1,4 +1,4 @@
-#include "spline.h"
+#include <spline.h>
 #include <numeric>
 #include <iostream>
 #include <fstream>

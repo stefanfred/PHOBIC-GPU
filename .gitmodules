@@ -4,3 +4,6 @@
 [submodule "external/essentials"]
 	path = external/essentials
 	url = https://github.com/jermp/essentials.git
+[submodule "external/spline"]
+	path = external/spline
+	url = https://github.com/ttk592/spline.git
