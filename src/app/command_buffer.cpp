@@ -14,9 +14,6 @@ static vk::CommandBuffer allocatePrimaryBuffer(const vk::Device &device, const v
 static vk::Fence createFence(const vk::Device &device) {
     vk::FenceCreateInfo fenceInfo{};
     fenceInfo.sType = vk::StructureType::eFenceCreateInfo;
-    // create fence in signaled state to prevent deadlock when
-    // rendering the first frame
-    fenceInfo.flags = vk::FenceCreateFlagBits::eSignaled;
     return CHECK(device.createFence(fenceInfo), "failed to create fence");
 }
 
@@ -83,9 +80,17 @@ void CommandBuffer::bindComputeDescriptorSet(const Pipeline &pipeline, const Des
 }
 
 
-void CommandBuffer::submit(const vk::Device &device, const vk::Queue &queue) {
+void CommandBuffer::submit(const vk::Device &device, const vk::Queue &queue, const bool wait) {
     primaryBuffer.end();
-    CHECK(queue.submit({vk::SubmitInfo(0, nullptr, nullptr, 1, &primaryBuffer)}), "failed to submit to queue!");
+    vk::Fence fence;
+    if(wait) {
+        fence = createFence(device);
+    }
+    CHECK(queue.submit({vk::SubmitInfo(0, nullptr, nullptr, 1, &primaryBuffer)}, fence), "failed to submit to queue!");
+    if(wait) {
+        CHECK(device.waitForFences({fence},true,-1), "wait for fence failed");
+        device.destroy(fence);
+    }
 }
 
 void CommandBuffer::begin() {

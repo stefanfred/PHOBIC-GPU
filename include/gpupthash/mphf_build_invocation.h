@@ -198,9 +198,7 @@ namespace gpupthash {
             addGpuCommands();
             double gpu2cpuOffset = totalTimer.elapsed();
             totalTimer.addLabel("setup commands");
-            cb->submit(app.device, app.computeQueue);
-            CHECK(app.device.waitIdle(), "failed to wait for until device is idle!");
-            // read GPU timestamps
+            cb->submit(app.device, app.computeQueue, true);
             cb->readTimestamps(app.device, app.pDevice);
             std::vector<TimestampResult> resTS = cb->getTimestamps();
 
@@ -214,11 +212,6 @@ namespace gpupthash {
             partitionOffsetArray[0] = 0;
             fillHostBuffer<uint32_t>(app.device, partitionsOffsetsHost.memory, partitionOffsetArray.data() + 1,
                                      partitions);
-            /*std::cout<<"BLA"<<std::endl;
-            for(auto v : partitionOffsetArray) {
-                std::cout<<v<<std::endl;
-            }
-            std::cout<<"BLA"<<std::endl;*/
 
             std::vector<uint32_t> outputArray(totalBucketCount);
             fillHostBuffer<uint32_t>(app.device, pilotsHost.memory, outputArray);

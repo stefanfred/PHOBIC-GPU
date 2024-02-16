@@ -75,7 +75,7 @@ public:
 
     void dispatch(const uint32_t groupCountX, const uint32_t groupCountY = 1, const uint32_t groupCountZ = 1);
 
-    void submit(const vk::Device &device, const vk::Queue &queue);
+    void submit(const vk::Device &device, const vk::Queue &queue, const bool wait = false);
 
     void destroy(const vk::Device &device, const vk::CommandPool &commandPool);
 
