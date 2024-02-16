@@ -17,7 +17,7 @@ static const std::vector<const char *> DEBUG_MODE_VALIDATION_LAYERS = {
 };
 
 static const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS = {
-        "VK_EXT_pipeline_creation_feedback"
+        //"VK_EXT_pipeline_creation_feedback"
 };
 
 static bool checkValidationLayerSupport(const std::vector<const char *> &validationLayers) {
@@ -79,11 +79,12 @@ static vk::Instance createInstance(const AppConfiguration &config) {
     // beginning with the 1.3.216 Vulkan SDK, the VK_KHR_PORTABILITY_subset extension is mandatory,
     // so we also add it
     std::vector<const char *> extensions(config.requiredExtensions);
-    extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    //extensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    //extensions.push_back(VK_KHR_MAINTENANCE_4_EXTENSION_NAME);
 
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
-    createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    //createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
     // optionally enable validation layers
     if (config.debugMode) {
@@ -193,6 +194,15 @@ static vk::PhysicalDevice pickPhysicalDevice(const vk::Instance &instance) {
     return pDevice;
 }
 
+static uint32_t getSubgroupSize(vk::PhysicalDevice pDevice) {
+    vk::PhysicalDeviceSubgroupProperties subgroupProperties;
+    vk::PhysicalDeviceProperties2 deviceProperties2;
+    deviceProperties2.pNext = &subgroupProperties;
+    pDevice.getProperties2(&deviceProperties2);
+    return subgroupProperties.subgroupSize;
+}
+
+
 static vk::Device createLogicalDevice(
         const AppConfiguration &config, const QueueFamilyIndices &indices,
         const vk::Instance &instance, const vk::PhysicalDevice &pDevice) {
@@ -263,6 +273,7 @@ App::App() {
 
     instance = createInstance(config);
     pDevice = pickPhysicalDevice(instance);
+    subGroupSize = getSubgroupSize(pDevice);
 
     indices = findQueueFamilies(pDevice);
     device = createLogicalDevice(config, indices, instance, pDevice);
@@ -301,9 +312,11 @@ void App::debugInfo() {
     pDevice.getProperties(&deviceProperties);
 
     std::cerr << "Device: " << deviceProperties.deviceName << std::endl;
+    std::cerr << "SubGroupSize: " << subGroupSize << std::endl;
     std::cerr << "Queues: C = " << indices.computeFamily.has_value()
               << ", T = " << indices.transferFamily.has_value() << std::endl;
 }
+
 
 const Shader *App::loadShader(const char *shaderName) {
     loadedShaders.push_back(new Shader(device, shaderName));

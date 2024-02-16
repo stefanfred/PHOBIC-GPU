@@ -65,14 +65,15 @@ void initial_pos(uint globalBucketStartPos, uint pilot, uint partitionSize, uint
             localCollision = true;
         }
         initialPos[i] = pos;
-        barrier();
     }
+    barrier();
 }
 
 bool testPilot(uint size, uint partitionSize, uint globalBucketStartPos, uint pilot) {
     uint offset = lID;
     // find no local coll pilot
     initial_pos(globalBucketStartPos, pilot, partitionSize, size);
+
     if (size>1) {
         if (localCollision) {
             return false;
@@ -95,7 +96,7 @@ bool testPilot(uint size, uint partitionSize, uint globalBucketStartPos, uint pi
         } else if (index==size) {
             atomicMin(pilotFound, offset);
         }
-        //barrier();
+        barrier();
     }
     barrier();
     return pilotFound != 0xFFFFFFFF;

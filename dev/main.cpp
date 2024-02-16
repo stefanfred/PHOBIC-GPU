@@ -8,7 +8,7 @@ using namespace gpupthash;
 int main(int argc, char *argv[]) {
     std::cout.precision(3);
     std::cout << std::fixed;
-    size_t size = 1e7;
+    size_t size;
 
     tlx::CmdlineParser cmd;
     cmd.add_bytes('n', "size", size, "Number of objects to construct with");
@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
         keys.push_back(Key(dis(gen), dis(gen), dis(gen), dis(gen)));
     }
 
-    MPHFbuilder builder(MPHFconfig(7.f, 1024));
+    MPHFbuilder builder(MPHFconfig(2.f, 1024));
 //MPHF<mono_encoder<compact>, diff_partition_encoder<compact>> f;
     FastMphf f;
     auto beginConstruction = std::chrono::high_resolution_clock::now();

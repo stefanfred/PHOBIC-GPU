@@ -33,12 +33,12 @@ namespace gpupthash {
         MPHFbuilder(MPHFconfig config = MPHFconfig()) :
                 config(config),
                 app(App::getInstance()),
-                bucketSizesStage(BucketSizesStage(app, 32)),
+                bucketSizesStage(BucketSizesStage(app, app.subGroupSize)),
                 bucketSortStage(BucketSortStage(app, config.bucketCountPerPartition, config.sortingBins)),
-                redistributeKeysStage(RedistributeKeysStage(app, 32)),
-                searchStage(SearchStage(app, 32, config)),
-                partitionOffsetPPSStage(PrefixSumStage(app, 32, 32)),
-                applyPartitionOffsetStage(PartitionOffsetStage(app, 32, config.bucketCountPerPartition)) {}
+                redistributeKeysStage(RedistributeKeysStage(app, app.subGroupSize)),
+                searchStage(SearchStage(app, app.subGroupSize, config)),
+                partitionOffsetPPSStage(PrefixSumStage(app, app.subGroupSize, app.subGroupSize)),
+                applyPartitionOffsetStage(PartitionOffsetStage(app, app.subGroupSize, config.bucketCountPerPartition)) {}
 
 
         template<typename Mphf, typename keyType>

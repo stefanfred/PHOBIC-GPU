@@ -56,6 +56,7 @@ private:
     std::vector<ShaderStage *> stages;
     App();
 public:
+    uint32_t subGroupSize;
 
     vk::Instance instance;
 
