@@ -166,25 +166,29 @@ namespace gpupthash {
             cb->writeTimeStamp(copyTS);
         }
 
-        void initialHash() {
-            keys.resize(keysRaw.size());
-
+        const std::vector<Key> &initialHash() {
+            if constexpr (std::is_same_v<keyType, Key>) {
+                return keysRaw;
+            } else {
+                keys.resize(keysRaw.size());
 #pragma omp parallel for
-            for (int i = 0; i < keysRaw.size(); ++i) {
-                keys[i]=Mphf::initialHash(keysRaw[i]);
+                for (int i = 0; i < keysRaw.size(); ++i) {
+                    keys[i] = Mphf::initialHash(keysRaw[i]);
+                }
+                return const_cast<const std::vector<Key> &>(keys);
             }
         }
 
         bool run() {
             HostTimer totalTimer;
 
-            initialHash();
+            const std::vector<Key> &keyUpload = initialHash();
             totalTimer.addLabel("initial hash");
             allocateBuffers();
             totalTimer.addLabel("allocation");
 
             fillDeviceWithStagingBufferVec(app.pDevice, app.device, app.transferCommandPool, app.transferQueue, keysSrc,
-                                           keys);
+                                           keyUpload);
             fillDeviceWithStagingBufferVec(app.pDevice, app.device, app.transferCommandPool, app.transferQueue,
                                            fulcrums,
                                            config.getFulcs());
