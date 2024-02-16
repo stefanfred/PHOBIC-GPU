@@ -22,7 +22,6 @@ function(add_shader TARGET SHADER)
     # compile shader binaries to binary directory
     set(current-output-path ${CMAKE_BINARY_DIR}/${SHADER}.spv)
 
-    file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
     get_filename_component(current-output-dir ${current-output-path} DIRECTORY)
     file(MAKE_DIRECTORY ${current-output-dir})
 
