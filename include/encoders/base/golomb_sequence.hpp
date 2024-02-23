@@ -46,17 +46,14 @@ namespace gpupthash {
             m_high_bits_d1.build(m_high_bits);
         }
 
-        inline uint64_t access(uint64_t i) const {
-            assert(i < size());
-            int64_t start = -1;
-            if (i) {
-                start = m_high_bits_d1.select(m_high_bits, i - 1);
-            }
-            int64_t end = m_high_bits_d1.select(m_high_bits, i);
-            int64_t high = end - start - 1;
-
-            return (high << m_low_bits.width()) | m_low_bits.access(i);
-        }
+    inline uint64_t access(uint64_t i) const {
+        assert(i < size());
+        int64_t start = -1;
+        if (i) { start = m_high_bits_d1.select(m_high_bits, i - 1); }
+        int64_t end = m_high_bits_d1.select(m_high_bits, i);
+        int64_t high = end - start - 1;
+        return (high << m_low_bits.width()) | m_low_bits.access(i);
+    }
 
         inline uint64_t size() const {
             return m_low_bits.size();

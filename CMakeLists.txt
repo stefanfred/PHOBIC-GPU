@@ -22,7 +22,6 @@ function(add_shader TARGET SHADER)
     # compile shader binaries to binary directory
     set(current-output-path ${CMAKE_BINARY_DIR}/${SHADER}.spv)
 
-    file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
     get_filename_component(current-output-dir ${current-output-path} DIRECTORY)
     file(MAKE_DIRECTORY ${current-output-dir})
 
@@ -46,6 +45,7 @@ add_library(GpuPTHash SHARED ${SOURCE_FILES})
 target_compile_features(GpuPTHash INTERFACE cxx_std_17)
 target_include_directories(GpuPTHash PUBLIC include)
 target_include_directories(GpuPTHash PUBLIC external)
+target_include_directories(GpuPTHash PUBLIC external/spline/src)
 target_include_directories(GpuPTHash PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(GpuPTHash PUBLIC Vulkan::Vulkan)
 target_link_libraries(GpuPTHash PUBLIC OpenMP::OpenMP_CXX)
