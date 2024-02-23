@@ -120,7 +120,9 @@ namespace gpupthash {
             }
 
             void push_back(uint64_t v) {
-                assert(m_width);
+                if (width() == 0) {
+                    return;
+                }
                 m_back = v;
                 m_bits[m_cur_block] &= ~(m_mask << m_cur_shift);
                 m_bits[m_cur_block] |= v << m_cur_shift;
