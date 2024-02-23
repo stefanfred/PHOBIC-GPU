@@ -12,7 +12,6 @@
 
 #include "gpupthash/mphf.hpp"
 #include "gpupthash/mphf_builder.h"
-#include "gpupthash/mphf_builder.h"
 
 #include "gpupthash/hasher.hpp"
 

@@ -140,13 +140,28 @@ void main() {
 
     uint bucketCnt=0;
 
+    uint sss = globalBucketStartPos;
+
     for (uint i = 0; i < BINS; i+=1) {
         uint size = BINS - i;
         uint cnt = bucketSizeHisto[i + wID * BINS];
         for (uint j = 0; j < cnt; j++) {
             searchPilot(size, partitionSize, globalBucketStartPos, bucketCnt);
+
+            /* SORT EXPERIMENT
+            float p = 1.0;
+            for(int inner=0;inner<size;inner++) {
+                p=p*(1.0f-float(globalBucketStartPos - sss + inner) / float(partitionSize));
+            }
+
+            uint globalIndex = wID * BUCKETS + bucketPermutation[bucketCnt + wID * BUCKETS];
+            //debug[globalIndex] = uint(p*1e8f);
+            atomicAdd(debug[bucketCnt], uint(p*1e6f));
+            */
+
             bucketCnt+=1;
             globalBucketStartPos += size;
+
         }
     }
 
@@ -156,6 +171,5 @@ void main() {
         uint globalIndex = wID + bucketPermutation[index + wID * BUCKETS] * wCnt;
         uint pilotV = pilotsFound[index];
         result[globalIndex] = pilotV;
-        debug[globalIndex] = pilotV;
     }
 } 

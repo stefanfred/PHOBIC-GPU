@@ -77,6 +77,10 @@ namespace gpupthash {
             this->pilots.encode(pilots.begin(), partitions, config.bucketCountPerPartition);
 #pragma omp taskwait
         }
+
+        float getBitsPerKey() const {
+            return float(pilots.num_bits() + partitionOffsets.num_bits()) / float(partitionOffsets.access(partitions));
+        }
     };
 
 }

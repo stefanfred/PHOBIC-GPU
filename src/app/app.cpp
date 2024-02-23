@@ -17,6 +17,7 @@ static const std::vector<const char *> DEBUG_MODE_VALIDATION_LAYERS = {
 };
 
 static const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS = {
+        VK_KHR_MAINTENANCE_4_EXTENSION_NAME
         //"VK_EXT_pipeline_creation_feedback"
 };
 
@@ -84,7 +85,12 @@ static vk::Instance createInstance(const AppConfiguration &config) {
 
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
-    //createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+
+    vk::PhysicalDeviceMaintenance4FeaturesKHR maintenance4Features{};
+    maintenance4Features.sType = vk::StructureType::ePhysicalDeviceMaintenance4FeaturesKHR;
+    maintenance4Features.maintenance4 = true;
+    maintenance4Features.pNext = nullptr;
+
 
     // optionally enable validation layers
     if (config.debugMode) {
@@ -143,11 +149,6 @@ static uint32_t scoreDeviceSuitability(const vk::PhysicalDevice &pDevice) {
     pDevice.getProperties(&deviceProperties);
     vk::PhysicalDeviceFeatures deviceFeatures;
     pDevice.getFeatures(&deviceFeatures);
-
-    // enforce non optional features
-    if (!deviceFeatures.tessellationShader || !deviceFeatures.multiDrawIndirect) {
-        return DEVICE_NOT_SUITABLE;
-    }
 
     // we need the specified device extensions
     if (!checkDeviceExtensionSupport(pDevice, REQUIRED_DEVICE_EXTENSIONS)) {
@@ -226,14 +227,13 @@ static vk::Device createLogicalDevice(
         queues.push_back(graphicsQueueCreateInfo);
     }
 
-    // specify that we need tesslation support
-    vk::PhysicalDeviceFeatures deviceFeatures{};
-    deviceFeatures.tessellationShader = true;
-    deviceFeatures.multiDrawIndirect = true;
-
     vk::PhysicalDeviceVulkan11Features vulkan11Features{};
     vulkan11Features.shaderDrawParameters = true;
     vulkan11Features.pNext = nullptr;
+
+
+    vk::PhysicalDeviceFeatures deviceFeatures{};
+
 
     vk::DeviceCreateInfo createInfo{};
     createInfo.sType = vk::StructureType::eDeviceCreateInfo;

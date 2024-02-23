@@ -23,11 +23,19 @@ shared uint[(BINS-1)+1] binSizesCopy;
 shared uint[BUCKETS] bucketSizesLocal;
 shared uint[BUCKETS] bucketCntInBin;
 
-//#define SHUFFLE
+
+
+#define SHUFFLE
 
 #ifdef SHUFFLE
 shared uint permutationData[BUCKETS];
 #include "hashing.glsl"
+
+
+uint rand(uint seed, uint max) {
+    return lowbias32(seed) % max;
+}
+
 void shuffle(uint start) {
     if (gl_LocalInvocationID.x!=0) {
         return;
@@ -130,7 +138,7 @@ void main() {
     // set bin sizes and local offsets
     //for(uint index = lID; index < BUCKETS; index+=wSize) {
     //for(uint index = 0; lID == 0 && index < BUCKETS; index+=1) {
-    for (int index = int(BUCKETS) - 1; lID == 0 && index >-1; index-=1) {
+     for (int index = int(BUCKETS) - 1; lID == 0 && index >-1; index-=1) {
         #ifdef SHUFFLE
         uint index2 = permutationData[index];
         #else

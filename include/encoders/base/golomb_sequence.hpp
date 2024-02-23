@@ -15,14 +15,9 @@ namespace gpupthash {
         uint64_t optimalL(Iterator begin, uint64_t n) {
             uint64_t sum = std::accumulate(begin, begin + n, static_cast<uint64_t>(0));
             double p = (n / (double(sum) + n));
-            const double gold = (sqrt(5.0) + 1.0) / 2.0;
-            return uint64_t(
-                    ceil(
-                            log2(
-                                    -log2(gold) / log2(1 - p)
-                            )
-                    )
-            );
+            const double gold = log2(2.0 / (sqrt(5.0) + 1.0));
+            int64_t res=int64_t(ceil(log2(gold / log2(1.0 - p))));
+            return std::max(int64_t(0), res);
         }
 
         template<typename Iterator>
@@ -59,6 +54,7 @@ namespace gpupthash {
             }
             int64_t end = m_high_bits_d1.select(m_high_bits, i);
             int64_t high = end - start - 1;
+
             return (high << m_low_bits.width()) | m_low_bits.access(i);
         }
 

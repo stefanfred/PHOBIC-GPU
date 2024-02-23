@@ -28,14 +28,15 @@ int main(int argc, char *argv[]) {
         keys.push_back(Key(dis(gen), dis(gen), dis(gen), dis(gen)));
     }
 
-    MPHFbuilder builder(MPHFconfig(2.f, 1024));
-//MPHF<mono_encoder<compact>, diff_partition_encoder<compact>> f;
-    FastMphf f;
+    MPHFbuilder builder(MPHFconfig(2.5f, 2048));
+    MPHF<ortho_encoder<golomb>, diff_partition_encoder<compact>, nohash> f;
+    //SmallMphf f;
     auto beginConstruction = std::chrono::high_resolution_clock::now();
     builder.build(keys, f);
     unsigned long constructionDurationMs = std::chrono::duration_cast<std::chrono::milliseconds>(
                    std::chrono::high_resolution_clock::now() - beginConstruction).count();
     std::cout << "Construction took " << constructionDurationMs << " ms" << std::endl;
+    std::cout << "Space required " << f.getBitsPerKey() << " bits per key" << std::endl;
 
     std::vector<bool> taken(keys.size(), false);
     for (size_t i = 0; i < keys.size(); i++) {

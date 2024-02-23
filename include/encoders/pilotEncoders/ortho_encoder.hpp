@@ -8,7 +8,7 @@ namespace gpupthash {
         template<typename Iterator>
         void encode(Iterator begin, uint64_t partitions, uint64_t buckets) {
             encoders.resize(buckets);
-            //#pragma omp parallel for
+#pragma omp parallel for
             for (size_t j = 0; j < buckets; j++) {
                 encoders[j].encode(begin + j * partitions, partitions);
             }

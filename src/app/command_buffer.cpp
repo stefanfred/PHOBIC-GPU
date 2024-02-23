@@ -81,7 +81,7 @@ void CommandBuffer::bindComputeDescriptorSet(const Pipeline &pipeline, const Des
 
 
 void CommandBuffer::submit(const vk::Device &device, const vk::Queue &queue, const bool wait) {
-    primaryBuffer.end();
+    CHECK(primaryBuffer.end(), "ending buffer failed");
     vk::Fence fence;
     if(wait) {
         fence = createFence(device);
@@ -95,7 +95,7 @@ void CommandBuffer::submit(const vk::Device &device, const vk::Queue &queue, con
 
 void CommandBuffer::begin() {
     vk::CommandBufferBeginInfo beginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-    primaryBuffer.begin(beginInfo);
+    CHECK(primaryBuffer.begin(beginInfo), "beginning buffer failed");
     primaryBuffer.resetQueryPool(timestampPool, 0, timestampsInfo.size());
 }
 
