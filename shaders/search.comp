@@ -96,7 +96,7 @@ bool testPilot(uint size, uint partitionSize, uint globalBucketStartPos, uint pi
         } else if (index==size) {
             atomicMin(pilotFound, offset);
         }
-        barrier();
+        //barrier();
     }
     barrier();
     return pilotFound != 0xFFFFFFFF;

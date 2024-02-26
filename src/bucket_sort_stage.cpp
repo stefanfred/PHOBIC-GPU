@@ -2,10 +2,12 @@
 
 namespace gpupthash {
 
-    BucketSortStage::BucketSortStage(App &app, uint32_t bucketCountPerPartition, uint32_t sortingBins) : app(app) {
+    BucketSortStage::BucketSortStage(App &app, uint32_t bucketCountPerPartition, uint32_t sortingBins,
+                                     uint32_t workGroupSize) : app(app) {
         struct sc {
             uint32_t a;
             uint32_t b;
+            uint32_t c;
         };
         bucketSortStage = app.computeStage(
                 app.loadShader("sort_sum"),
@@ -22,8 +24,9 @@ namespace gpupthash {
                 {
                         {0, sizeof(uint32_t) * 0, sizeof(uint32_t)},
                         {1, sizeof(uint32_t) * 1, sizeof(uint32_t)},
+                        {2, sizeof(uint32_t) * 2, sizeof(uint32_t)},
                 },
-                sc{sortingBins / 2, bucketCountPerPartition}
+                sc{workGroupSize, bucketCountPerPartition, sortingBins}
         );
     }
 

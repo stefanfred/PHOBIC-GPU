@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     std::vector<Key> keys;
     keys.reserve(size);
     std::random_device rd;
-    std::mt19937_64 gen(rd());
+    std::mt19937_64 gen(0);
     std::uniform_int_distribution<uint32_t> dis;
     for (size_t i = 0; i < size; ++i) {
         keys.push_back(Key(dis(gen), dis(gen), dis(gen), dis(gen)));

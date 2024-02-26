@@ -37,7 +37,7 @@ namespace gpupthash {
                 config(config),
                 app(App::getInstance()),
                 bucketSizesStage(BucketSizesStage(app, app.subGroupSize)),
-                bucketSortStage(BucketSortStage(app, config.bucketCountPerPartition, config.sortingBins)),
+                bucketSortStage(BucketSortStage(app, config.bucketCountPerPartition, config.sortingBins, app.subGroupSize)),
                 redistributeKeysStage(RedistributeKeysStage(app, app.subGroupSize)),
                 searchStage(SearchStage(app, app.subGroupSize, config)),
                 partitionOffsetPPSStage(PrefixSumStage(app, app.subGroupSize, app.subGroupSize)),
@@ -93,7 +93,7 @@ namespace gpupthash {
 
 
         void allocateBuffers() {
-            debugBuffer = app.memoryAlloc.createDeviceLocalBuffer(sizeof(uint32_t) * config.bucketCountPerPartition,
+            debugBuffer = app.memoryAlloc.createDeviceLocalBuffer(sizeof(uint32_t) * config.sortingBins,
                                                                   vk::BufferUsageFlagBits::eTransferSrc);
 
             fulcrums = app.memoryAlloc.createDeviceLocalBuffer(sizeof(uint32_t) * FULCS_INTER,

@@ -12,20 +12,19 @@ layout(binding = 2) buffer histoB { uint histo[]; };
 layout(binding = 3) buffer partitionSizesB { uint partitionSizes[]; };
 layout(binding = 4) buffer bucketPermutationB { uint bucketPermutation[]; };
 layout(constant_id = 1) const uint BUCKETS = 42;
+layout(constant_id = 2) const uint BINS = 42;
 
-
-#define BINS (gl_WorkGroupSize.x * 2)
 
 #include "constants.glsl"
 
-shared uint[(BINS-1)+1] binSizes;
-shared uint[(BINS-1)+1] binSizesCopy;
+shared uint[BINS] binSizes;
+shared uint[BINS] binSizesCopy;
 shared uint[BUCKETS] bucketSizesLocal;
 shared uint[BUCKETS] bucketCntInBin;
 
 
 
-#define SHUFFLE
+//#define SHUFFLE
 
 #ifdef SHUFFLE
 shared uint permutationData[BUCKETS];
@@ -59,22 +58,21 @@ uint binAssign(uint size) {
 }
 
 uint prefixSumBins() {
-    barrier();
-    uint sum2=0;
-    if (gl_LocalInvocationID.x==0) {
-        for (uint i=0; i<BINS;i++){
-            uint z=binSizes[(i)];
-            binSizes[(i)]=sum2;
-            sum2+=z;
-        }
+
+    uint localSize = 2 * wSize;
+    uint halfsize = wSize;
+    // reversed index for convenience
+    uint rlID = halfsize - lID - 1;
+
+    uint binFactor = BINS / localSize;
+
+    // local summing
+    for (uint i = 1; i < binFactor; i++) {
+        binSizes[i+binFactor*lID]+=binSizes[i+binFactor*lID-1];
+        binSizes[i+binFactor*(lID+wSize)]+=binSizes[i+binFactor*(lID + wSize)-1];
     }
     barrier();
-    return sum2;
 
-
-    uint localSize = BINS;
-    uint halfsize = localSize / 2;
-    uint rlID = halfsize - gl_LocalInvocationID.x - 1;
 
     // Perform up-sweep
     uint stride = 1;
@@ -82,7 +80,7 @@ uint prefixSumBins() {
     while (stride <= halfsize) {
         // threads that participate in this reduction step
         if (rlID % stride == 0) {
-            binSizes[(lID * 2 + 1)] = binSizes[(2 * lID - stride + 1)] + binSizes[(2 * lID + 1)];
+            binSizes[(lID * 2 + 2) * binFactor - 1] = binSizes[(2 * lID - stride + 2) * binFactor-1] + binSizes[(2 * lID + 2) * binFactor-1];
         }
         stride = stride * 2;
 
@@ -91,12 +89,11 @@ uint prefixSumBins() {
     }
 
     // Set the last element to 0 and save sum
+    uint sum = binSizes[BINS-1];
     barrier();
-    uint sum = binSizes[(localSize - 1)];
     if (lID == 0) {
-        binSizes[(localSize - 1)] = 0;
+        binSizes[BINS-1] = 0;
     }
-    barrier();
 
 
     // Perform down-sweep
@@ -108,19 +105,36 @@ uint prefixSumBins() {
         uint upperLeftValue;
         if (part) {
             // threads that participate in this propagations step
-            upperLeftValue = binSizes[(lID * 2 + 1 - stride)];
+            upperLeftValue = binSizes[(lID * 2 + 2 - stride) * binFactor-1];
         }
         barrier();
         if (part){
             // left child
-            binSizes[(lID * 2 + 1 - stride)] = binSizes[(lID * 2 + 1)];
+            binSizes[(lID * 2 + 2 - stride) * binFactor-1] = binSizes[(lID * 2 + 2) * binFactor-1];
             // right child
-            binSizes[(lID * 2 + 1)] = binSizes[(lID * 2 + 1)] + upperLeftValue;
+            binSizes[(lID * 2 + 2) * binFactor-1] = binSizes[(lID * 2 + 2) * binFactor-1] + upperLeftValue;
         }
 
         // half the stride for next layer
         stride = stride / 2;
     }
+
+    barrier();
+    // local summing
+    uint ssum1=binSizes[binFactor*(lID+1)-1];
+    uint ssum2=binSizes[binFactor*(wSize+lID+1)-1];
+    uint prev1=0;
+    uint prev2=0;
+
+    for (uint i = 0; i < binFactor; i++) {
+        uint next1 = binSizes[i+binFactor*lID];
+        uint next2 = binSizes[i+binFactor*(wSize+lID)];
+        binSizes[i+binFactor*lID]=prev1+ssum1;
+        binSizes[i+binFactor*(wSize+lID)]=prev2 + ssum2;
+        prev1=next1;
+        prev2=next2;
+    }
+
     return sum;
 }
 
@@ -130,15 +144,16 @@ void main() {
     #endif
 
     // initialize bin counter shared variable to zero
-    binSizes[(lID)] = 0;
-    binSizes[(lID + wSize)] = 0;
+    for (uint i = lID; i < BINS; i+= wSize) {
+        binSizes[i] = 0;
+    }
 
     barrier();
 
     // set bin sizes and local offsets
     //for(uint index = lID; index < BUCKETS; index+=wSize) {
     //for(uint index = 0; lID == 0 && index < BUCKETS; index+=1) {
-     for (int index = int(BUCKETS) - 1; lID == 0 && index >-1; index-=1) {
+    for (int index = int(BUCKETS) - 1; lID == 0 && index >-1; index-=1) {
         #ifdef SHUFFLE
         uint index2 = permutationData[index];
         #else
@@ -160,17 +175,15 @@ void main() {
     barrier();
 
 
-    // write the histogram of the bucket sizes to a buffer
-    histo[lID + wID * BINS] = binSizes[(lID)];
-    histo[lID + wSize + wID * BINS] = binSizes[(lID + wSize)];
-
-    // make a copy
-    binSizesCopy[(lID)] = binSizes[(lID)];
-    binSizesCopy[(lID + wSize)] = binSizes[(lID + wSize)];
+    // write the histogram of the bucket sizes to a buffer and make a copy
+    for (uint i = lID; i < BINS; i+= wSize) {
+        histo[i + wID * BINS] = binSizes[i];
+        binSizesCopy[i] = binSizes[i];
+    }
 
     // offsets of bins
+    barrier();
     prefixSumBins();
-
     barrier();
 
 
@@ -188,9 +201,9 @@ void main() {
     barrier();
 
     // restore copy and multiply with actual size
-    binSizes[(lID)] = binSizesCopy[(lID)] * (BINS - lID);
-    binSizes[(lID + wSize)] = binSizesCopy[(lID + wSize)] * (BINS - (lID + wSize));
-
+    for (uint i = lID; i < BINS; i+= wSize) {
+        binSizes[i] = binSizesCopy[i] * (BINS - i);
+    }
     barrier();
 
     // prefix sum the bins

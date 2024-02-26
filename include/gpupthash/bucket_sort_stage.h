@@ -14,8 +14,10 @@ namespace gpupthash {
         App &app;
         const ShaderStage *bucketSortStage;
 
+        uint32_t workGroupSize;
     public:
-        BucketSortStage(App &app, uint32_t bucketCountPerPartition, uint32_t sortingBins);
+        BucketSortStage(App &app, uint32_t bucketCountPerPartition, uint32_t sortingBins,
+                        uint32_t workGroupSize);
 
         void addCommands(CommandBuffer *cb, PushStructBucketSort constants, vk::Buffer bucketSizes, size_t partitions,
                          vk::Buffer debug, vk::Buffer histo, vk::Buffer partitionsSizes,
