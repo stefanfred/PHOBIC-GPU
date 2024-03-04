@@ -75,11 +75,12 @@ int benchmark() {
     std::cout << "RESULT "
               << timerQuery.getResultStyle(queries)
               << timerConstruct.getResultStyle(size)
+              << "bits_per_key=" << f.getBitsPerKey() << " "
               << timerInternal.getResultStyle(size)
               << "size=" << size
               << " queries=" << queries
               << " A=" << A
-              << " partitionSize=" << partitionSize
+              << " partition_size=" << partitionSize
               << " pilotencoder=" << f.getPilotEncoder().name()
               << " partitionencoder=" << offsetencoder::name()
               << " hashfunction=" << hashfunctionstring
