@@ -33,7 +33,7 @@ namespace gpupthash {
         }
 
         std::string name() {
-            return "OrthoEncoderDual<" + BaseEncoder1::name() + ", " + BaseEncoder2::name() + ", " + tradeoff + ">";
+            return "OrthoEncoderDual<" + BaseEncoder1::name() + "," + BaseEncoder2::name() + "," + std::to_string(tradeoff) + ">";
         }
 
         uint64_t num_bits() const {

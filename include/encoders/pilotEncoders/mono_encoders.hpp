@@ -17,7 +17,7 @@ public:
         enc.encode(begin, partitions * buckets);
     }
 
-    static std::string name() {
+    std::string name() {
         return BaseEncoder::name();
     }
 

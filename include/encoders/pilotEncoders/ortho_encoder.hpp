@@ -19,7 +19,7 @@ namespace gpupthash {
         }
 
 
-        static std::string name() {
+        std::string name() {
             return "OrthoEncoder<" + BaseEncoder::name() + ">";
         }
 

@@ -79,12 +79,9 @@ int benchmark() {
               << "size=" << size
               << " queries=" << queries
               << " A=" << A
-              << " tradeoff=" << tradeoff
               << " partitionSize=" << partitionSize
-              << " pilotencoderstrat=" << pilotencoderstrat
-              << " pilotencoderbase=" << pilotencoderbase
-              << " partitionencoderstrat=" << partitionencoderstrat
-              << " partitionencoderbase=" << partitionencoderbase
+              << " pilotencoder=" << f.getPilotEncoder().name()
+              << " partitionencoder=" << offsetencoder::name()
               << " hashfunction=" << hashfunctionstring
               << " " << App::getInstance().getInfoResultStyle()
               << std::endl;
@@ -125,7 +122,7 @@ int dispatchPilotEncoderStrat() {
         return dispatchPilotEncoderBase<ortho_encoder<pilotbaseencoder>>();
     }
     if (pilotencoderstrat == "dualortho") {
-        return dispatchPilotEncoderBase<ortho_encoder_dual<compact, golomb>>();
+        return dispatchPilotEncoderBase<ortho_encoder_dual<golomb, compact>>();
     }
     return 1;
 }
