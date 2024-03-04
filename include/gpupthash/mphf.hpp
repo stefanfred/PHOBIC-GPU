@@ -54,11 +54,11 @@ namespace gpupthash {
         }
 
         constexpr static bool noHash() {
-            return  std::is_same_v<Hasher, nohash>;
+            return std::is_same_v<Hasher, nohash>;
         }
 
         template<typename keyType>
-        static inline Key initialHash(keyType keyRaw) {
+        static inline const Key &initialHash(const keyType &keyRaw) {
             return Hasher::hash(keyRaw);
         }
 
@@ -74,7 +74,7 @@ namespace gpupthash {
         }
 
         template<typename keyType>
-        inline uint32_t operator()(keyType keyRaw) const {
+        inline uint32_t operator()(const keyType &keyRaw) const {
             Key key = initialHash(keyRaw);
             uint64_t partition = (uint64_t(key.partitioner) * uint64_t(partitions)) >> 32;
             uint64_t bucket = getBucket(key.bucketer);

@@ -100,7 +100,7 @@ namespace gpupthash {
 
 
     struct nohash {
-        static inline Key hash(Key val) {
+        static inline const Key &hash(const Key &val) {
             return val;
         }
     };
@@ -109,24 +109,24 @@ namespace gpupthash {
 
         // specialization for std::string
         static inline Key hash(std::string const &val) {
-            return Key(MurmurHash2_64(val.data(), val.size(), 0),
-                       MurmurHash2_64(val.data(), val.size(), 1));
+            return {MurmurHash2_64(val.data(), val.size(), 0),
+                       MurmurHash2_64(val.data(), val.size(), 1)};
         }
 
         // specialization for uint64_t
         static inline Key hash(uint64_t val) {
-            return Key(MurmurHash2_64(reinterpret_cast<char const *>(&val), sizeof(val), 0),
-                       MurmurHash2_64(reinterpret_cast<char const *>(&val), sizeof(val), 1));
+            return {MurmurHash2_64(reinterpret_cast<char const *>(&val), sizeof(val), 0),
+                       MurmurHash2_64(reinterpret_cast<char const *>(&val), sizeof(val), 1)};
         }
 
         // specialization for std::pair<uint64_t, uint64_t>
         static inline Key hash(std::pair<uint64_t, uint64_t> val) {
-            return Key(MurmurHash2_64(reinterpret_cast<char const *>(&val.first), sizeof(val.first), 0),
-                       MurmurHash2_64(reinterpret_cast<char const *>(&val.second), sizeof(val.second), 0));
+            return {MurmurHash2_64(reinterpret_cast<char const *>(&val.first), sizeof(val.first), 0),
+                       MurmurHash2_64(reinterpret_cast<char const *>(&val.second), sizeof(val.second), 0)};
         }
 
         // specialization for Key
-        static inline Key hash(Key val) {
+        static inline Key hash(const Key &val) {
             return hash(std::pair<uint64_t, uint64_t>((uint64_t(val.partitioner) << 32U) | uint64_t(val.bucketer),(uint64_t(val.lower1) << 32U) | uint64_t(val.lower2)));
         }
     };
