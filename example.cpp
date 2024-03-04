@@ -13,9 +13,9 @@ int main(int argc, char *argv[]) {
     App::getInstance().printDebugInfo();
 
     // number of elements
-    size_t size = 1e5;
+    size_t size = 1e7;
 
-    // create some random input
+    // create some input
     std::vector<std::string> keys;
     keys.reserve(size);
     for (int i = 0; i < size; ++i) {
@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     // the average bucket size tradeoffs construction time with space consumption
     // the partition size should be tuned for the particular hardware
     // the builder can be reused
-    MPHFbuilder builder(MPHFconfig(2.5f, 2048));
+    MPHFbuilder builder(MPHFconfig(5.0f, 2048));
 
     // the minimal perfect hash function
     // the templates are <pilot_encoding, partition_offset_encoding, initial_hash_function>

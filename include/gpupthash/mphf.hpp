@@ -53,6 +53,10 @@ namespace gpupthash {
             return pilots;
         }
 
+        constexpr static bool noHash() {
+            return  std::is_same_v<Hasher, nohash>;
+        }
+
         template<typename keyType>
         static inline Key initialHash(keyType keyRaw) {
             return Hasher::hash(keyRaw);

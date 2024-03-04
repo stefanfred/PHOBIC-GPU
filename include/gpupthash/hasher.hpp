@@ -122,12 +122,12 @@ namespace gpupthash {
         // specialization for std::pair<uint64_t, uint64_t>
         static inline Key hash(std::pair<uint64_t, uint64_t> val) {
             return Key(MurmurHash2_64(reinterpret_cast<char const *>(&val.first), sizeof(val.first), 0),
-                       MurmurHash2_64(reinterpret_cast<char const *>(&val.second), sizeof(val.second), 1));
+                       MurmurHash2_64(reinterpret_cast<char const *>(&val.second), sizeof(val.second), 0));
         }
 
         // specialization for Key
         static inline Key hash(Key val) {
-            return hash(std::pair<uint64_t, uint64_t>((uint64_t(val.partitioner) << 32U) || uint64_t(val.bucketer),(uint64_t(val.lower1) << 32U) || uint64_t(val.lower2)));
+            return hash(std::pair<uint64_t, uint64_t>((uint64_t(val.partitioner) << 32U) | uint64_t(val.bucketer),(uint64_t(val.lower1) << 32U) | uint64_t(val.lower2)));
         }
     };
 

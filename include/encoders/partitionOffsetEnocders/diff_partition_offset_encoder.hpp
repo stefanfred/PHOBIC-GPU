@@ -16,7 +16,7 @@ public:
     }
 
     static std::string name() {
-        return "Direct<" + BaseEncoder::name() + ">";
+        return "DiffToExpected<" + BaseEncoder::name() + ">";
     }
 
     size_t size() const {

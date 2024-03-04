@@ -199,8 +199,12 @@ namespace gpupthash {
         }
 
         const std::vector<Key> &initialHash() {
-            if constexpr (std::is_same_v<keyType, Key>) {
-                return keysRaw;
+            if constexpr (Mphf::noHash()) {
+                if constexpr(std::is_same_v<Key, keyType>) {
+                    return keysRaw;
+                } else {
+                    exit(1); // should be unreachable
+                }
             } else {
                 keys.resize(keysRaw.size());
 #pragma omp parallel for

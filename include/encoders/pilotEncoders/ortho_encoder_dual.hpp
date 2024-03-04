@@ -17,11 +17,11 @@ namespace gpupthash {
             encoder2.encode(begin + buckets1 * partitions, partitions, buckets2);
         }
 
-        void setEncoderTradeoff(float tradeoff) {
+        void setEncoderTradeoff(float enc_tradeoff) {
             assert(tradeoff <= 1.0);
             assert(tradeoff >= 0.0);
             assert(!initialized);
-            this->tradeoff = tradeoff;
+            this->tradeoff = enc_tradeoff;
         }
 
         inline uint64_t access(uint64_t partition, uint64_t bucket) const {
