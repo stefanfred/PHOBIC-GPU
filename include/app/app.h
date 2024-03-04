@@ -80,7 +80,7 @@ public:
 
     ~App();
 
-    void debugInfo();
+    void printDebugInfo();
 
     CommandBuffer *createCommandBuffer();
 

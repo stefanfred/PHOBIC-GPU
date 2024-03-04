@@ -20,7 +20,7 @@ namespace gpupthash {
         }
     };
 
-    class Theo1Bucketer : public Bucketer {
+    class TheoBucketer : public Bucketer {
     public:
         double getBucketRel(double relInput) const {
             if (relInput > 0.9999) {

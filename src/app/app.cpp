@@ -306,14 +306,14 @@ App::~App() {
     instance.destroy();
 }
 
-void App::debugInfo() {
+void App::printDebugInfo() {
     // fetch features and properties of device
     vk::PhysicalDeviceProperties deviceProperties;
     pDevice.getProperties(&deviceProperties);
 
-    std::cerr << "Device: " << deviceProperties.deviceName << std::endl;
-    std::cerr << "SubGroupSize: " << subGroupSize << std::endl;
-    std::cerr << "Queues: C = " << indices.computeFamily.has_value()
+    std::cout << "Device: " << deviceProperties.deviceName << std::endl;
+    std::cout << "SubGroupSize: " << subGroupSize << std::endl;
+    std::cout << "Queues: C = " << indices.computeFamily.has_value()
               << ", T = " << indices.transferFamily.has_value() << std::endl;
 }
 

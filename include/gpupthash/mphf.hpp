@@ -32,7 +32,7 @@ namespace gpupthash {
         }
 
         inline uint32_t hashPos(uint32_t pilot, uint32_t lower1, uint32_t lower2, uint32_t partitionSize) const {
-            uint64_t M = fastmod::computeM_u32(partitionSize); //ToD: cache M for all possibel partition sizes
+            uint64_t M = fastmod::computeM_u32(partitionSize); //ToDo: cache M for all possibel partition sizes
             uint32_t hashPilot = fastmod::fastdiv_u32(pilot, M);
             uint32_t hashValue = hash(lower1, hash(lower2, hashPilot)) >> 1;
             uint32_t pos = fastmod::fastmod_u32(hashValue + pilot, M, partitionSize);
@@ -49,10 +49,24 @@ namespace gpupthash {
         }
 
     public:
+        PilotEncoder &getPilotEncoder() {
+            return pilots;
+        }
 
         template<typename keyType>
         static inline Key initialHash(keyType keyRaw) {
             return Hasher::hash(keyRaw);
+        }
+
+        void setData(const std::vector<uint32_t> &pilots, std::vector<uint32_t> &partitionOffsets, uint32_t partitions,
+                     MPHFconfig config) {
+            this->config = config;
+            this->partitions = partitions;
+
+#pragma omp task
+            this->partitionOffsets.encode(partitionOffsets.begin(), config.partitionSize, partitions + 1);
+            this->pilots.encode(pilots.begin(), partitions, config.bucketCountPerPartition);
+#pragma omp taskwait
         }
 
         template<typename keyType>
@@ -64,18 +78,6 @@ namespace gpupthash {
             uint32_t partitionOffset = partitionOffsets.access(partition);
             uint32_t partitionSize = partitionOffsets.access(partition + 1) - partitionOffset;
             return partitionOffset + hashPos(pilot, key.lower1, key.lower2, partitionSize);
-        }
-
-
-        void setData(const std::vector<uint32_t> &pilots, std::vector<uint32_t> &partitionOffsets, uint32_t partitions,
-                     MPHFconfig config) {
-            this->config = config;
-            this->partitions = partitions;
-
-#pragma omp task
-            this->partitionOffsets.encode(partitionOffsets.begin(), config.partitionSize, partitions + 1);
-            this->pilots.encode(pilots.begin(), partitions, config.bucketCountPerPartition);
-#pragma omp taskwait
         }
 
         float getBitsPerKey() const {
