@@ -113,4 +113,6 @@ public:
         return computeStage(shader, bindings, pushRanges,
                             specMap, &data, sizeof(SPEC_DATA));
     }
+
+    std::string getInfoResultStyle();
 };

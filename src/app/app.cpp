@@ -306,6 +306,23 @@ App::~App() {
     instance.destroy();
 }
 
+std::string App::getInfoResultStyle() {
+    vk::PhysicalDeviceProperties deviceProperties;
+    pDevice.getProperties(&deviceProperties);
+    std::string res;
+    res += "devce_name=";
+    std::string deviceName = std::string(deviceProperties.deviceName);
+    std::replace(deviceName.begin(), deviceName.end(), ' ', '_');
+    res += deviceName;
+    res += " subgroupsize=";
+    res += std::to_string(subGroupSize);
+    res += " computeQueues=";
+    res += std::to_string(indices.computeFamily.has_value());
+    res += " transferQueues=";
+    res += std::to_string(indices.transferFamily.has_value());
+    return res;
+}
+
 void App::printDebugInfo() {
     // fetch features and properties of device
     vk::PhysicalDeviceProperties deviceProperties;

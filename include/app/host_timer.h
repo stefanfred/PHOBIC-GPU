@@ -21,9 +21,11 @@ public:
 
     void addLabel(std::string name);
 
-    void addLabelManual(std::string name, double time);
+    void addLabelManually(std::string name, double time);
 
-    void printLabels(double div);
+    std::string getResultStyle(double div) const;
+
+    void printLabels(double div) const;
 
     double elapsed() const;
 };

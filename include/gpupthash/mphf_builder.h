@@ -45,7 +45,7 @@ namespace gpupthash {
                         PartitionOffsetStage(app, app.subGroupSize, config.bucketCountPerPartition)) {}
 
         template<typename Mphf, typename keyType>
-        void build(const std::vector<keyType> &keys, Mphf &f);
+        HostTimer build(const std::vector<keyType> &keys, Mphf &f);
     };
 
     template<typename Mphf, typename keyType>
@@ -137,13 +137,13 @@ namespace gpupthash {
         void addGpuCommands() {
             TimestampCreateInfo createInfo;
             TimestampHandle beginTS = createInfo.addTimestamp({""});
-            TimestampHandle bucketSizesTS = createInfo.addTimestamp({"bucket sizes"});
-            TimestampHandle bucketSortingTS = createInfo.addTimestamp({"bucket sorting"});
-            TimestampHandle partitionOffsetsTS = createInfo.addTimestamp({"partition offsets"});
-            TimestampHandle partitionOffsetsApplyTS = createInfo.addTimestamp({"apply partition offsets"});
-            TimestampHandle keyRedistributeTS = createInfo.addTimestamp({"key redistribution"});
+            TimestampHandle bucketSizesTS = createInfo.addTimestamp({"bucket_sizes"});
+            TimestampHandle bucketSortingTS = createInfo.addTimestamp({"bucket_sorting"});
+            TimestampHandle partitionOffsetsTS = createInfo.addTimestamp({"partition_offsets"});
+            TimestampHandle partitionOffsetsApplyTS = createInfo.addTimestamp({"apply_partition_offsets"});
+            TimestampHandle keyRedistributeTS = createInfo.addTimestamp({"key_redistribution"});
             TimestampHandle searchTS = createInfo.addTimestamp({"search"});
-            TimestampHandle copyTS = createInfo.addTimestamp({"map output"});
+            TimestampHandle copyTS = createInfo.addTimestamp({"memory_map"});
 
             cb->attachTimestamps(app.device, createInfo);
 
@@ -218,11 +218,11 @@ namespace gpupthash {
             return out;
         }
 
-        bool run() {
+        HostTimer run() {
             HostTimer totalTimer;
 
             const std::vector<Key> &keyUpload = initialHash();
-            totalTimer.addLabel("initial hash");
+            totalTimer.addLabel("initial_hash");
             allocateBuffers();
             totalTimer.addLabel("allocation");
 
@@ -231,18 +231,18 @@ namespace gpupthash {
             fillDeviceWithStagingBufferVec(app.pDevice, app.device, app.transferCommandPool, app.transferQueue,
                                            fulcrums,
                                            config.getFulcs());
-            totalTimer.addLabel("input transfer");
+            totalTimer.addLabel("input_transfer");
 
             cb = app.createCommandBuffer();
             addGpuCommands();
             double gpu2cpuOffset = totalTimer.elapsed();
-            totalTimer.addLabel("setup commands");
+            totalTimer.addLabel("setup_commands");
             cb->submit(app.device, app.computeQueue, true);
             cb->readTimestamps(app.device, app.pDevice);
             std::vector<TimestampResult> resTS = cb->getTimestamps();
 
             for (int i = 1; i < resTS.size(); i++) {
-                totalTimer.addLabelManual("GPU: " + resTS[i].handle.info.name,
+                totalTimer.addLabelManually("GPU_" + resTS[i].handle.info.name,
                                           resTS[i].time - resTS[0].time + gpu2cpuOffset);
             }
 
@@ -254,14 +254,14 @@ namespace gpupthash {
 
             std::vector<uint32_t> outputArray(totalBucketCount);
             fillHostBuffer<uint32_t>(app.device, pilotsHost.memory, outputArray);
-            totalTimer.addLabel("result transfer");
+            totalTimer.addLabel("result_transfer");
 
-            std::cout << "TIMINGS" << std::endl;
-            totalTimer.printLabels(size);
+            //std::cout << "TIMINGS" << std::endl;
+            //totalTimer.printLabels(size);
             cb->destroy(app.device, app.computeCommandPool);
 
             // debug information
-            BufferAllocation print = debugBuffer;
+            /*BufferAllocation print = debugBuffer;
             size_t outSize = print.capacity / 4;
             std::vector<uint32_t> debug;
             debug.resize(outSize);
@@ -280,11 +280,11 @@ namespace gpupthash {
                 }
                 csv << "\n";
             }
-            csv.close();
+            csv.close();*/
 
             f.setData(outputArray, partitionOffsetArray, partitions, config);
             totalTimer.addLabel("encoding");
-            return true;
+            return totalTimer;
         }
 
 
@@ -309,9 +309,10 @@ namespace gpupthash {
 
 
     template<typename Mphf, typename keyType>
-    void MPHFbuilder::build(const std::vector<keyType> &keys, Mphf &f) {
+    HostTimer MPHFbuilder::build(const std::vector<keyType> &keys, Mphf &f) {
         BuildInvocation<Mphf, keyType> bd(f, keys, keys.size(), config, app, this);
-        bd.run();
+        HostTimer timings = bd.run();
         bd.destroy();
+        return timings;
     }
 }
