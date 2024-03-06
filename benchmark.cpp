@@ -25,7 +25,8 @@ std::uniform_int_distribution<uint32_t> dis;
 
 template <typename pilotencoder, typename offsetencoder, typename hashfunction, typename keytype>
 int benchmark(const std::vector<keytype>& keys) {
-    MPHFbuilder builder(MPHFconfig(A, partitionSize));
+    MPHFconfig conf(A, partitionSize);
+    MPHFbuilder builder(conf);
     MPHF<pilotencoder, offsetencoder, hashfunction> f;
 
     if constexpr (std::is_same<pilotencoder, ortho_encoder_dual<golomb, compact>>::value) {
@@ -61,16 +62,17 @@ int benchmark(const std::vector<keytype>& keys) {
     }
 
     HostTimer timerQuery;
-    for (int i = 0; i < size; ++i) { DO_NOT_OPTIMIZE(f(keys[i])); }
+    for (int i = 0; i < queries; ++i) { DO_NOT_OPTIMIZE(f(queryInputs[i])); }
     timerQuery.addLabel("query_time");
 
-    std::cout << "RESULT " << timerQuery.getResultStyle(queries)
-              << timerConstruct.getResultStyle(size) << "bits_per_key=" << f.getBitsPerKey() << " "
+    std::cout << "RESULT " << f.getResultLine() << " "<<timerQuery.getResultStyle(queries)
+              << timerConstruct.getResultStyle(size) << " "
               << timerInternal.getResultStyle(size) << "size=" << size << " queries=" << queries
               << " A=" << A << " partition_size=" << partitionSize
               << " pilotencoder=" << f.getPilotEncoder().name()
               << " partitionencoder=" << offsetencoder::name()
-              << " hashfunction=" << hashfunctionstring << " "
+              << " hashfunction=" << hashfunctionstring
+              << " buckets_per_partition="<<conf.bucketCountPerPartition<< " "
               << App::getInstance().getInfoResultStyle() << std::endl;
     return 0;
 }
