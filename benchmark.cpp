@@ -16,7 +16,7 @@ std::string pilotencoderstrat = "dualortho";
 std::string pilotencoderbase = "c";
 std::string partitionencoderstrat = "diff";
 std::string partitionencoderbase = "c";
-std::string hashfunctionstring = "none";
+std::string hashfunctionstring = "murmur2";
 std::string keytypestring = "string";
 
 std::random_device rd;
