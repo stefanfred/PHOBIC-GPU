@@ -16,8 +16,8 @@ std::string pilotencoderstrat = "dualortho";
 std::string pilotencoderbase = "c";
 std::string partitionencoderstrat = "diff";
 std::string partitionencoderbase = "c";
-std::string hashfunctionstring = "murmur2";
-std::string keytypestring = "string";
+std::string hashfunctionstring = "none";
+std::string keytypestring = "direct";
 bool validate = false;
 bool lookupTime = false;
 
@@ -25,8 +25,8 @@ std::random_device rd;
 std::mt19937_64 gen(rd());
 std::uniform_int_distribution<uint32_t> dis;
 
-template <typename pilotencoder, typename offsetencoder, typename hashfunction, typename keytype>
-int benchmark(const std::vector<keytype>& keys) {
+template<typename pilotencoder, typename offsetencoder, typename hashfunction, typename keytype>
+int benchmark(const std::vector<keytype> &keys) {
     MPHFconfig conf(A, partitionSize);
     MPHFbuilder builder(conf);
     MPHF<pilotencoder, offsetencoder, hashfunction> f;
@@ -57,7 +57,8 @@ int benchmark(const std::vector<keytype>& keys) {
         // result is valid
     }
 
-    std::string benchResult="query_time=---";
+    const std::string querytimeKey = "query_time";
+    std::string benchResult = querytimeKey + "=--- ";
     if (lookupTime) {
         // bench
         std::vector<keytype> queryInputs;
@@ -69,11 +70,11 @@ int benchmark(const std::vector<keytype>& keys) {
 
         HostTimer timerQuery;
         for (int i = 0; i < queries; ++i) { DO_NOT_OPTIMIZE(f(queryInputs[i])); }
-        timerQuery.addLabel("query_time");
+        timerQuery.addLabel(querytimeKey);
         benchResult = timerQuery.getResultStyle(queries);
     }
 
-    std::cout << "RESULT " << f.getResultLine() << " "<< benchResult
+    std::cout << "RESULT " << f.getResultLine() << " " << benchResult
               << timerConstruct.getResultStyle(size) << " "
               << timerInternal.getResultStyle(size) << "size=" << size << " queries=" << queries
               << " A=" << A << " partition_size=" << partitionSize
@@ -81,12 +82,12 @@ int benchmark(const std::vector<keytype>& keys) {
               << " partitionencoder=" << offsetencoder::name()
               << " hashfunction=" << hashfunctionstring
               << " validated=" << validate
-              << " buckets_per_partition="<<conf.bucketCountPerPartition<< " "
+              << " buckets_per_partition=" << conf.bucketCountPerPartition << " "
               << App::getInstance().getInfoResultStyle() << std::endl;
     return 0;
 }
 
-template <typename pilotstrat, typename partitionstrat, typename hashfunction>
+template<typename pilotstrat, typename partitionstrat, typename hashfunction>
 int dispatchKeyType() {
     if (keytypestring == "direct") {
         std::vector<Key> keys;
@@ -108,7 +109,7 @@ int dispatchKeyType() {
     return 1;
 }
 
-template <typename pilotstrat, typename partitionstrat>
+template<typename pilotstrat, typename partitionstrat>
 int dispatchHashFunction() {
     if (hashfunctionstring == "none") {
         return dispatchKeyType<pilotstrat, partitionstrat, nohash>();
@@ -119,7 +120,7 @@ int dispatchHashFunction() {
     return 1;
 }
 
-template <typename pilotstrat, typename partitionbase>
+template<typename pilotstrat, typename partitionbase>
 int dispatchPartitionEncoderStrat() {
     if (partitionencoderstrat == "diff") {
         return dispatchHashFunction<pilotstrat, diff_partition_encoder<partitionbase>>();
@@ -130,10 +131,10 @@ int dispatchPartitionEncoderStrat() {
     return 1;
 }
 
-template <typename pilotencoderstrat>
+template<typename pilotencoderstrat>
 int dispatchPilotEncoderBase();
 
-template <typename pilotbaseencoder>
+template<typename pilotbaseencoder>
 int dispatchPilotEncoderStrat() {
     if (pilotencoderstrat == "mono") {
         return dispatchPilotEncoderBase<mono_encoder<pilotbaseencoder>>();
@@ -147,7 +148,7 @@ int dispatchPilotEncoderStrat() {
     return 1;
 }
 
-template <typename pilotencoderstrat, typename base>
+template<typename pilotencoderstrat, typename base>
 int dispatchDynamic() {
     if constexpr (std::is_same<pilotencoderstrat, void>::value) {
         return dispatchPilotEncoderStrat<base>();
@@ -156,7 +157,7 @@ int dispatchDynamic() {
     }
 }
 
-template <typename pilotencoderstrat>
+template<typename pilotencoderstrat>
 int dispatchPilotEncoderBase() {
     if (pilotencoderbase == "c") { return dispatchDynamic<pilotencoderstrat, compact>(); }
     if (pilotencoderbase == "ef") { return dispatchDynamic<pilotencoderstrat, elias_fano>(); }
@@ -167,7 +168,7 @@ int dispatchPilotEncoderBase() {
     return dispatchDynamic<pilotencoderstrat, compact>();
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     App::getInstance().printDebugInfo();
 
     tlx::CmdlineParser cmd;
@@ -188,8 +189,8 @@ int main(int argc, char* argv[]) {
                    "The initial hash function for the keys");
     cmd.add_string('k', "keytype", keytypestring,
                    "The type of the input keys");
-    cmd.add_bool('v', "validate", validate,"Wether the MPHF is validated");
-    cmd.add_bool('l', "lookup", lookupTime,"Wether lookup time is measured");
+    cmd.add_bool('v', "validate", validate, "Wether the MPHF is validated");
+    cmd.add_bool('l', "lookup", lookupTime, "Wether lookup time is measured");
 
     if (!cmd.process(argc, argv)) {
         cmd.print_usage();
