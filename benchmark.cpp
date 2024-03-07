@@ -18,6 +18,8 @@ std::string partitionencoderstrat = "diff";
 std::string partitionencoderbase = "c";
 std::string hashfunctionstring = "murmur2";
 std::string keytypestring = "string";
+bool validate = false;
+bool lookupTime = false;
 
 std::random_device rd;
 std::mt19937_64 gen(rd());
@@ -37,41 +39,48 @@ int benchmark(const std::vector<keytype>& keys) {
     HostTimer timerInternal = builder.build(keys, f);
     timerConstruct.addLabel("total_construct");
 
-    // check valid
-    std::vector<bool> taken(keys.size(), false);
-    for (size_t i = 0; i < keys.size(); i++) {
-        size_t hash = f(keys.at(i));
-        if (hash >= keys.size()) {
-            std::cerr << "Out of range!" << std::endl;
-            return 1;
+    if (validate) {
+        // check valid
+        std::vector<bool> taken(keys.size(), false);
+        for (size_t i = 0; i < keys.size(); i++) {
+            size_t hash = f(keys.at(i));
+            if (hash >= keys.size()) {
+                std::cerr << "Out of range!" << std::endl;
+                return 1;
+            }
+            if (taken[hash]) {
+                std::cerr << "Collision by key " << i << "!" << std::endl;
+                return 1;
+            }
+            taken[hash] = true;
         }
-        if (taken[hash]) {
-            std::cerr << "Collision by key " << i << "!" << std::endl;
-            return 1;
-        }
-        taken[hash] = true;
-    }
-    // result is valid
-
-    // bench
-    std::vector<keytype> queryInputs;
-    queryInputs.reserve(queries);
-    for (int i = 0; i < queries; ++i) {
-        uint64_t pos = dis(gen) % size;
-        queryInputs.push_back(keys[pos]);
+        // result is valid
     }
 
-    HostTimer timerQuery;
-    for (int i = 0; i < queries; ++i) { DO_NOT_OPTIMIZE(f(queryInputs[i])); }
-    timerQuery.addLabel("query_time");
+    std::string benchResult="query_time=---";
+    if (lookupTime) {
+        // bench
+        std::vector<keytype> queryInputs;
+        queryInputs.reserve(queries);
+        for (int i = 0; i < queries; ++i) {
+            uint64_t pos = dis(gen) % size;
+            queryInputs.push_back(keys[pos]);
+        }
 
-    std::cout << "RESULT " << f.getResultLine() << " "<<timerQuery.getResultStyle(queries)
+        HostTimer timerQuery;
+        for (int i = 0; i < queries; ++i) { DO_NOT_OPTIMIZE(f(queryInputs[i])); }
+        timerQuery.addLabel("query_time");
+        benchResult = timerQuery.getResultStyle(queries);
+    }
+
+    std::cout << "RESULT " << f.getResultLine() << " "<< benchResult
               << timerConstruct.getResultStyle(size) << " "
               << timerInternal.getResultStyle(size) << "size=" << size << " queries=" << queries
               << " A=" << A << " partition_size=" << partitionSize
               << " pilotencoder=" << f.getPilotEncoder().name()
               << " partitionencoder=" << offsetencoder::name()
               << " hashfunction=" << hashfunctionstring
+              << " validated=" << validate
               << " buckets_per_partition="<<conf.bucketCountPerPartition<< " "
               << App::getInstance().getInfoResultStyle() << std::endl;
     return 0;
@@ -179,6 +188,8 @@ int main(int argc, char* argv[]) {
                    "The initial hash function for the keys");
     cmd.add_string('k', "keytype", keytypestring,
                    "The type of the input keys");
+    cmd.add_bool('v', "validate", validate,"Wether the MPHF is validated");
+    cmd.add_bool('l', "lookup", lookupTime,"Wether lookup time is measured");
 
     if (!cmd.process(argc, argv)) {
         cmd.print_usage();
