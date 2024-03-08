@@ -16,8 +16,8 @@ std::string pilotencoderstrat = "dualortho";
 std::string pilotencoderbase = "c";
 std::string partitionencoderstrat = "diff";
 std::string partitionencoderbase = "c";
-std::string hashfunctionstring = "none";
-std::string keytypestring = "direct";
+std::string hashfunctionstring = "xxh";
+std::string keytypestring = "string";
 bool validate = false;
 bool lookupTime = false;
 
@@ -26,7 +26,7 @@ std::mt19937_64 gen(rd());
 std::uniform_int_distribution<uint32_t> dis;
 
 template<typename pilotencoder, typename offsetencoder, typename hashfunction, typename keytype>
-int benchmark(const std::vector<keytype> &keys) {
+bool benchmark(const std::vector<keytype> &keys) {
     MPHFconfig conf(A, partitionSize);
     MPHFbuilder builder(conf);
     MPHF<pilotencoder, offsetencoder, hashfunction> f;
@@ -84,11 +84,11 @@ int benchmark(const std::vector<keytype> &keys) {
               << " validated=" << validate
               << " buckets_per_partition=" << conf.bucketCountPerPartition << " "
               << App::getInstance().getInfoResultStyle() << std::endl;
-    return 0;
+    return true;
 }
 
 template<typename pilotstrat, typename partitionstrat, typename hashfunction>
-int dispatchKeyType() {
+bool dispatchKeyType() {
     if (keytypestring == "direct") {
         std::vector<Key> keys;
         keys.reserve(size);
@@ -106,36 +106,36 @@ int dispatchKeyType() {
             return benchmark<pilotstrat, partitionstrat, hashfunction, std::string>(keys);
         }
     }
-    return 1;
+    return false;
 }
 
 template<typename pilotstrat, typename partitionstrat>
-int dispatchHashFunction() {
+bool dispatchHashFunction() {
     if (hashfunctionstring == "none") {
         return dispatchKeyType<pilotstrat, partitionstrat, nohash>();
     }
-    if (hashfunctionstring == "murmur2") {
-        return dispatchKeyType<pilotstrat, partitionstrat, murmurhash2>();
+    if (hashfunctionstring == "xxh") {
+        return dispatchKeyType<pilotstrat, partitionstrat, xxhhash>();
     }
-    return 1;
+    return false;
 }
 
 template<typename pilotstrat, typename partitionbase>
-int dispatchPartitionEncoderStrat() {
+bool dispatchPartitionEncoderStrat() {
     if (partitionencoderstrat == "diff") {
         return dispatchHashFunction<pilotstrat, diff_partition_encoder<partitionbase>>();
     }
     if (partitionencoderstrat == "direct") {
         return dispatchHashFunction<pilotstrat, direct_partition_encoder<partitionbase>>();
     }
-    return 1;
+    return false;
 }
 
 template<typename pilotencoderstrat>
-int dispatchPilotEncoderBase();
+bool dispatchPilotEncoderBase();
 
 template<typename pilotbaseencoder>
-int dispatchPilotEncoderStrat() {
+bool dispatchPilotEncoderStrat() {
     if (pilotencoderstrat == "mono") {
         return dispatchPilotEncoderBase<mono_encoder<pilotbaseencoder>>();
     }
@@ -145,11 +145,11 @@ int dispatchPilotEncoderStrat() {
     if (pilotencoderstrat == "dualortho") {
         return dispatchPilotEncoderBase<ortho_encoder_dual<golomb, compact>>();
     }
-    return 1;
+    return false;
 }
 
 template<typename pilotencoderstrat, typename base>
-int dispatchDynamic() {
+bool dispatchDynamic() {
     if constexpr (std::is_same<pilotencoderstrat, void>::value) {
         return dispatchPilotEncoderStrat<base>();
     } else {
@@ -158,7 +158,7 @@ int dispatchDynamic() {
 }
 
 template<typename pilotencoderstrat>
-int dispatchPilotEncoderBase() {
+bool dispatchPilotEncoderBase() {
     if (pilotencoderbase == "c") { return dispatchDynamic<pilotencoderstrat, compact>(); }
     if (pilotencoderbase == "ef") { return dispatchDynamic<pilotencoderstrat, elias_fano>(); }
     if (pilotencoderbase == "d") { return dispatchDynamic<pilotencoderstrat, dictionary>(); }
@@ -192,10 +192,10 @@ int main(int argc, char *argv[]) {
     cmd.add_bool('v', "validate", validate, "Wether the MPHF is validated");
     cmd.add_bool('l', "lookup", lookupTime, "Wether lookup time is measured");
 
-    if (!cmd.process(argc, argv)) {
+    bool valid = cmd.process(argc, argv) && dispatchPilotEncoderBase<void>();
+    if (!valid) {
         cmd.print_usage();
-        return 1;
+        return EXIT_FAILURE;
     }
-
-    return dispatchPilotEncoderBase<void>();
+    return EXIT_SUCCESS;
 }

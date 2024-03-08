@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
     // the minimal perfect hash function
     // the templates are <pilot_encoding, partition_offset_encoding, initial_hash_function>
-    MPHF<ortho_encoder<golomb>, diff_partition_encoder<compact>, murmurhash2> f;
+    MPHF<ortho_encoder<golomb>, diff_partition_encoder<compact>, xxhhash> f;
 
     // measure construction time
     auto beginConstruction = std::chrono::high_resolution_clock::now();
