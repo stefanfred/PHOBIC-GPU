@@ -27,7 +27,7 @@ namespace gpupthash {
     };
 
 
-    struct xxhhash {
+    struct xxhash {
 
         // specialization for std::string
         static inline Key hash(std::string const &val) {

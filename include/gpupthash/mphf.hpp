@@ -2,7 +2,7 @@
 
 #include "shader_constants.h"
 #include "mphf_config.h"
-#include "encoders/base/golomb_sequence.hpp"
+#include "encoders/base/rice_sequence.hpp"
 #include "encoders/base/ef_sequence.hpp"
 #include "encoders/pilotEncoders/ortho_encoder.hpp"
 #include "encoders/pilotEncoders/ortho_encoder_dual.hpp"

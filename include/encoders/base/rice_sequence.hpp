@@ -9,7 +9,7 @@
 
 
 namespace gpupthash {
-    struct golomb_sequence {
+    struct rice_sequence {
 
         template<typename Iterator>
         uint64_t optimalL(Iterator begin, uint64_t n) {

@@ -3,7 +3,7 @@
 #include "compact_vector.hpp"
 #include "ef_sequence.hpp"
 #include "sdc_sequence.hpp"
-#include "golomb_sequence.hpp"
+#include "rice_sequence.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -11,14 +11,14 @@
 
 namespace gpupthash {
 
-struct golomb {
+struct rice {
     template <typename Iterator>
     void encode(Iterator begin, uint64_t n) {
         m_values.encode(begin, n);
     }
 
     static std::string name() {
-        return "golomb";
+        return "rice";
     }
 
     size_t size() const {
@@ -39,7 +39,7 @@ struct golomb {
     }
 
 private:
-    golomb_sequence m_values;
+    rice_sequence m_values;
 };
 
 struct compact {

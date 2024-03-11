@@ -17,7 +17,7 @@
 
 namespace gpupthash {
 
-    typedef MPHF<ortho_encoder<compact>, diff_partition_encoder<compact>, nohash> FastMphf;
-    typedef MPHF<ortho_encoder<golomb>, diff_partition_encoder<compact>, nohash> SmallMphf;
+    typedef MPHF<ortho_encoder<compact>, diff_partition_encoder<compact>, xxhash> FastMphf;
+    typedef MPHF<ortho_encoder<rice>, diff_partition_encoder<compact>, xxhash> SmallMphf;
 
 }

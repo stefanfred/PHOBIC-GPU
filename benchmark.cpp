@@ -9,17 +9,16 @@ using namespace gpupthash;
 
 size_t size = 1e8;
 size_t queries = 1e8;
-double A = 7.5;
+double lambda = 7.5;
 double tradeoff = 0.5;
 size_t partitionSize = 2048;
 std::string pilotencoderstrat = "dualortho";
 std::string pilotencoderbase = "c";
 std::string partitionencoderstrat = "diff";
 std::string partitionencoderbase = "c";
-std::string hashfunctionstring = "xxh";
+std::string hashfunctionstring = "xx";
 std::string keytypestring = "string";
 bool validate = false;
-bool lookupTime = false;
 
 std::random_device rd;
 std::mt19937_64 gen(rd());
@@ -27,11 +26,11 @@ std::uniform_int_distribution<uint32_t> dis;
 
 template<typename pilotencoder, typename offsetencoder, typename hashfunction, typename keytype>
 bool benchmark(const std::vector<keytype> &keys) {
-    MPHFconfig conf(A, partitionSize);
+    MPHFconfig conf(lambda, partitionSize);
     MPHFbuilder builder(conf);
     MPHF<pilotencoder, offsetencoder, hashfunction> f;
 
-    if constexpr (std::is_same<pilotencoder, ortho_encoder_dual<golomb, compact>>::value) {
+    if constexpr (std::is_same<pilotencoder, ortho_encoder_dual<rice, compact>>::value) {
         f.getPilotEncoder().setEncoderTradeoff(tradeoff);
     }
 
@@ -39,7 +38,7 @@ bool benchmark(const std::vector<keytype> &keys) {
     HostTimer timerInternal = builder.build(keys, f);
     timerConstruct.addLabel("total_construct");
 
-    if (validate) {
+    if (queries > 0) {
         // check valid
         std::vector<bool> taken(keys.size(), false);
         for (size_t i = 0; i < keys.size(); i++) {
@@ -59,7 +58,7 @@ bool benchmark(const std::vector<keytype> &keys) {
 
     const std::string querytimeKey = "query_time";
     std::string benchResult = querytimeKey + "=--- ";
-    if (lookupTime) {
+    if (queries > 0) {
         // bench
         std::vector<keytype> queryInputs;
         queryInputs.reserve(queries);
@@ -77,7 +76,7 @@ bool benchmark(const std::vector<keytype> &keys) {
     std::cout << "RESULT " << f.getResultLine() << " " << benchResult
               << timerConstruct.getResultStyle(size) << " "
               << timerInternal.getResultStyle(size) << "size=" << size << " queries=" << queries
-              << " A=" << A << " partition_size=" << partitionSize
+              << " l=" << lambda << " partition_size=" << partitionSize
               << " pilotencoder=" << f.getPilotEncoder().name()
               << " partitionencoder=" << offsetencoder::name()
               << " hashfunction=" << hashfunctionstring
@@ -114,8 +113,8 @@ bool dispatchHashFunction() {
     if (hashfunctionstring == "none") {
         return dispatchKeyType<pilotstrat, partitionstrat, nohash>();
     }
-    if (hashfunctionstring == "xxh") {
-        return dispatchKeyType<pilotstrat, partitionstrat, xxhhash>();
+    if (hashfunctionstring == "xx") {
+        return dispatchKeyType<pilotstrat, partitionstrat, xxhash>();
     }
     return false;
 }
@@ -143,7 +142,7 @@ bool dispatchPilotEncoderStrat() {
         return dispatchPilotEncoderBase<ortho_encoder<pilotbaseencoder>>();
     }
     if (pilotencoderstrat == "dualortho") {
-        return dispatchPilotEncoderBase<ortho_encoder_dual<golomb, compact>>();
+        return dispatchPilotEncoderBase<ortho_encoder_dual<rice, compact>>();
     }
     return false;
 }
@@ -162,7 +161,7 @@ bool dispatchPilotEncoderBase() {
     if (pilotencoderbase == "c") { return dispatchDynamic<pilotencoderstrat, compact>(); }
     if (pilotencoderbase == "ef") { return dispatchDynamic<pilotencoderstrat, elias_fano>(); }
     if (pilotencoderbase == "d") { return dispatchDynamic<pilotencoderstrat, dictionary>(); }
-    if (pilotencoderbase == "r") { return dispatchDynamic<pilotencoderstrat, golomb>(); }
+    if (pilotencoderbase == "r") { return dispatchDynamic<pilotencoderstrat, rice>(); }
     if (pilotencoderbase == "sdc") { return dispatchDynamic<pilotencoderstrat, sdc>(); }
     // workaround for dual, compact will be ignored
     return dispatchDynamic<pilotencoderstrat, compact>();
@@ -173,14 +172,14 @@ int main(int argc, char *argv[]) {
 
     tlx::CmdlineParser cmd;
     cmd.add_bytes('n', "size", size, "Number of objects to construct with");
-    cmd.add_bytes('q', "queries", size, "Number of queries for benchmarking");
-    cmd.add_double('a', "avgbucketsize", A, "Average number of objects in one bucket");
+    cmd.add_bytes('q', "queries", size, "Number of queries for benchmarking or 0 for no benchmarking");
+    cmd.add_double('l', "lambda", lambda, "Average number of elements in one bucket");
     cmd.add_bytes('p', "partitionsize", partitionSize, "Expected size of the partitions");
     cmd.add_string('e', "pilotencoderstrat", pilotencoderstrat, "The pilot encoding strategy");
     cmd.add_string('b', "pilotencoderbase", pilotencoderbase,
                    "The pilot encoding technique (ignored for dual)");
     cmd.add_double('t', "dualtradeoff", tradeoff,
-                   "relative number of compact and golomb encoder (only for dual)");
+                   "relative number of compact and rice encoder (only for dual)");
     cmd.add_string('s', "offsetencoderstrat", partitionencoderstrat,
                    "The partition offset encoding strategy");
     cmd.add_string('o', "offsetencoderbase", partitionencoderbase,
@@ -190,7 +189,6 @@ int main(int argc, char *argv[]) {
     cmd.add_string('k', "keytype", keytypestring,
                    "The type of the input keys");
     cmd.add_bool('v', "validate", validate, "Wether the MPHF is validated");
-    cmd.add_bool('l', "lookup", lookupTime, "Wether lookup time is measured");
 
     bool valid = cmd.process(argc, argv) && dispatchPilotEncoderBase<void>();
     if (!valid) {
