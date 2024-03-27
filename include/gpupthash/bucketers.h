@@ -20,17 +20,20 @@ namespace gpupthash {
         }
     };
 
-    class TheoBucketer : public Bucketer {
+    class OptBucketer : public Bucketer {
     public:
         double getBucketRel(double relInput) const {
-            if (relInput > 0.9999) {
-                return 1.0;
-            }
-            return (relInput - (relInput - 1.0) * log(1.0 - relInput));
+            const double lambda = 10; const uint64_t table_size=2048;
+            constexpr double local_collision_factor = 0.5;
+            double slope;
+            slope = std::max(
+                    0.05, std::min(1.0, local_collision_factor * lambda / std::sqrt((double)table_size)));
+            return std::max(relInput + (1 - relInput) * std::log(1 - relInput),
+                            slope * relInput);;
         }
     };
 
-    class PTBucketer : public Bucketer {
+    class SkewBucketer : public Bucketer {
     public:
         double getBucketRel(double relInput) const {
             if (relInput < 0.6) {

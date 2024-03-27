@@ -34,12 +34,15 @@ namespace gpupthash {
         void setBucketer(Bucketer *bucketer) {
             // initialize fulcrums for bucket assignment
 
-            for (size_t xi = 0; xi < FULCS_INTER; xi++) {
+            fulcrums.push_back(0);
+            for (size_t xi = 1; xi < FULCS_INTER - 1; xi++) {
                 double x = double(xi) / double(FULCS_INTER - 1);
                 double y = bucketer->getBucketRel(x);
-                uint32_t fulcV = uint32_t(y * double(bucketCountPerPartition) * double(1 << 16));
+                std::cout<<y <<" ";
+                uint32_t fulcV = uint32_t(y * double(bucketCountPerPartition<<16));
                 fulcrums.push_back(fulcV);
             }
+            fulcrums.push_back(bucketCountPerPartition<<16);
         }
 
 

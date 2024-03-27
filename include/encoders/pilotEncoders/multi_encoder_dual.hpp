@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ortho_encoder.hpp"
+#include "multi_encoder.hpp"
 
 namespace gpupthash {
 
     template<typename BaseEncoder1, typename BaseEncoder2>
-    struct ortho_encoder_dual {
+    struct multi_encoder_dual {
         template<typename Iterator>
         void encode(Iterator begin, uint64_t partitions, uint64_t buckets) {
             initialized = true;
@@ -33,7 +33,7 @@ namespace gpupthash {
         }
 
         std::string name() {
-            return "OrthoEncoderDual<" + BaseEncoder1::name() + "," + BaseEncoder2::name() + "," + std::to_string(tradeoff) + ">";
+            return "MultiEncoderDual<" + BaseEncoder1::name() + "," + BaseEncoder2::name() + "," + std::to_string(tradeoff) + ">";
         }
 
         uint64_t num_bits() const {
@@ -50,7 +50,7 @@ namespace gpupthash {
         bool initialized = false;
         uint64_t buckets1;
         float tradeoff = 0.5;
-        ortho_encoder <BaseEncoder1> encoder1;
-        ortho_encoder <BaseEncoder2> encoder2;
+        multi_encoder <BaseEncoder1> encoder1;
+        multi_encoder <BaseEncoder2> encoder2;
     };
 }  // namespace gpupthash

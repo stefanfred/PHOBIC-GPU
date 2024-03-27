@@ -3,7 +3,7 @@
 namespace gpupthash {
 
     template<typename BaseEncoder>
-    struct ortho_encoder {
+    struct multi_encoder {
 
         template<typename Iterator>
         void encode(Iterator begin, uint64_t partitions, uint64_t buckets) {
@@ -20,7 +20,7 @@ namespace gpupthash {
 
 
         std::string name() {
-            return "OrthoEncoder<" + BaseEncoder::name() + ">";
+            return "MultiEncoder<" + BaseEncoder::name() + ">";
         }
 
         uint64_t num_bits() const {
