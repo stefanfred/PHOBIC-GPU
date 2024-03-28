@@ -50,7 +50,6 @@ add_library(GpuPTHash SHARED ${SOURCE_FILES})
 target_compile_features(GpuPTHash INTERFACE cxx_std_17)
 target_include_directories(GpuPTHash PUBLIC include)
 target_include_directories(GpuPTHash SYSTEM PUBLIC external)
-target_include_directories(GpuPTHash SYSTEM PUBLIC external/spline/src)
 target_include_directories(GpuPTHash SYSTEM PUBLIC external/xxHash)
 target_include_directories(GpuPTHash PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(GpuPTHash PUBLIC Vulkan::Vulkan)
@@ -61,8 +60,6 @@ foreach (file ${files})
     get_filename_component(file ${file} NAME)
     add_shader(GpuPTHash shaders/${file})
 endforeach ()
-
-file(COPY bucketMappings DESTINATION ${CMAKE_BINARY_DIR}) # include bucket mapping CSV files
 
 add_subdirectory(external/essentials)
 target_link_libraries(GpuPTHash PUBLIC ESSENTIALS)
