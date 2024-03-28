@@ -2,6 +2,7 @@
 #include <tlx/cmdline_parser.hpp>
 
 #include <gpuptmphf.hpp>
+#include <omp.h>
 
 using namespace gpupthash;
 
@@ -170,8 +171,8 @@ bool dispatchPilotEncoderBase() {
 
 int main(int argc, char *argv[]) {
     App::getInstance().printDebugInfo();
-
     tlx::CmdlineParser cmd;
+    uint64_t threads = 8;
     cmd.add_bytes('n', "size", size, "Number of objects to construct with");
     cmd.add_bytes('q', "queries", queries, "Number of queries for benchmarking or 0 for no benchmarking");
     cmd.add_double('l', "lambda", lambda, "Average number of elements in one bucket");
@@ -179,7 +180,7 @@ int main(int argc, char *argv[]) {
     cmd.add_string('e', "pilotencoderstrat", pilotencoderstrat, "The pilot encoding strategy");
     cmd.add_string('b', "pilotencoderbase", pilotencoderbase,
                    "The pilot encoding technique (ignored for dual)");
-    cmd.add_double('t', "dualtradeoff", tradeoff,
+    cmd.add_double('d', "dualtradeoff", tradeoff,
                    "relative number of compact and rice encoder (only for dual)");
     cmd.add_string('s', "offsetencoderstrat", partitionencoderstrat,
                    "The partition offset encoding strategy");
@@ -190,8 +191,13 @@ int main(int argc, char *argv[]) {
     cmd.add_string('k', "keytype", keytypestring,
                    "The type of the input keys");
     cmd.add_bool('v', "validate", validate, "Wether the MPHF is validated");
+    cmd.add_bytes('t', "threads", threads, "omp_set_num_threads(t)");
 
-    bool valid = cmd.process(argc, argv) && dispatchPilotEncoderBase<void>();
+    bool valid = cmd.process(argc, argv);
+    if(valid) {
+        omp_set_num_threads(threads);
+        valid = dispatchPilotEncoderBase<void>();
+    }
     if (!valid) {
         cmd.print_usage();
         return EXIT_FAILURE;
