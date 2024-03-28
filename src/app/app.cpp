@@ -310,7 +310,7 @@ std::string App::getInfoResultStyle() {
     vk::PhysicalDeviceProperties deviceProperties;
     pDevice.getProperties(&deviceProperties);
     std::string res;
-    res += "devce_name=";
+    res += "device_name=";
     std::string deviceName = std::string(deviceProperties.deviceName);
     std::replace(deviceName.begin(), deviceName.end(), ' ', '_');
     res += deviceName;

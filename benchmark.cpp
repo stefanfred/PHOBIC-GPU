@@ -38,7 +38,7 @@ bool benchmark(const std::vector<keytype> &keys) {
     HostTimer timerInternal = builder.build(keys, f);
     timerConstruct.addLabel("total_construct");
 
-    if (queries > 0) {
+    if (validate) {
         // check valid
         std::vector<bool> taken(keys.size(), false);
         for (size_t i = 0; i < keys.size(); i++) {
@@ -54,6 +54,7 @@ bool benchmark(const std::vector<keytype> &keys) {
             taken[hash] = true;
         }
         // result is valid
+        std::cout << "Valid result" << std::endl;
     }
 
     const std::string querytimeKey = "query_time";
@@ -172,7 +173,7 @@ int main(int argc, char *argv[]) {
 
     tlx::CmdlineParser cmd;
     cmd.add_bytes('n', "size", size, "Number of objects to construct with");
-    cmd.add_bytes('q', "queries", size, "Number of queries for benchmarking or 0 for no benchmarking");
+    cmd.add_bytes('q', "queries", queries, "Number of queries for benchmarking or 0 for no benchmarking");
     cmd.add_double('l', "lambda", lambda, "Average number of elements in one bucket");
     cmd.add_bytes('p', "partitionsize", partitionSize, "Expected size of the partitions");
     cmd.add_string('e', "pilotencoderstrat", pilotencoderstrat, "The pilot encoding strategy");
