@@ -1,1 +1,1 @@
-#define FULCS_INTER 1024
+#define FULCS_INTER 2048
