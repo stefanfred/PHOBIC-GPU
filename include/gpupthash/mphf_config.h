@@ -26,7 +26,7 @@ namespace gpupthash {
         MPHFconfig(double averageBucketSize = 8.0, uint32_t partitionSize = 2048) :
                 partitionSize(partitionSize),
                 sortingBins(256),
-                bucketCountPerPartition(uint32_t(round(partitionSize / averageBucketSize))),
+                bucketCountPerPartition(uint32_t(std::ceil(partitionSize / averageBucketSize))),
                 m_averageBucketSize(averageBucketSize) {
             Bucketer* defaultBucketer = new OptBucketer();
             setBucketer(defaultBucketer);
