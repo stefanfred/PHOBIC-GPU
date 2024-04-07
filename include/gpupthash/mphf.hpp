@@ -15,6 +15,7 @@ namespace gpupthash {
 template <typename PilotEncoder, typename PartitionOffsetEncoder, typename Hasher>
 class MPHF {
 private:
+    std::vector<uint32_t> fulcs;
     MPHFconfig config;
 
     uint32_t partitions;
@@ -43,8 +44,8 @@ private:
         uint64_t z = bucketBits * uint64_t(FULCS_INTER - 1);
         uint64_t index = z >> 32;
         uint64_t part = z & 0xFFFFFFFF;
-        uint64_t v1 = (config.getFulcs()[index + 0] * part) >> 32;
-        uint64_t v2 = (config.getFulcs()[index + 1] * (0xFFFFFFFF - part)) >> 32;
+        uint64_t v1 = (fulcs[index + 0] * part) >> 32;
+        uint64_t v2 = (fulcs[index + 1] * (0xFFFFFFFF - part)) >> 32;
         return (v1 + v2) >> 16;
     }
 
@@ -64,7 +65,7 @@ public:
 
     void setData(const std::vector<uint32_t>& pilots, std::vector<uint32_t>& partitionOffsets,
                  uint32_t partitions, MPHFconfig config) {
-        this->config = config;
+        fulcs = config.getFulcs();
         this->partitions = partitions;
 
 #pragma omp task

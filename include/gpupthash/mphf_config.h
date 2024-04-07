@@ -31,6 +31,7 @@ namespace gpupthash {
             Bucketer* defaultBucketer = new OptBucketer();
             setBucketer(defaultBucketer);
             delete defaultBucketer;
+            std::cout<<bucketCountPerPartition<<std::endl;
         }
 
         MPHFconfig(Bucketer* bucketer, double averageBucketSize = 8.0, uint32_t partitionSize = 2048) :
