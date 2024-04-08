@@ -16,7 +16,6 @@ template <typename PilotEncoder, typename PartitionOffsetEncoder, typename Hashe
 class MPHF {
 private:
     std::vector<uint32_t> fulcs;
-    MPHFconfig config;
 
     uint32_t partitions;
     PilotEncoder pilots;
@@ -87,7 +86,7 @@ public:
     }
 
     float getBitsPerKey() const {
-        return float(pilots.num_bits() + partitionOffsets.num_bits()) /
+        return float(pilots.num_bits() + partitionOffsets.num_bits() + 32 * fulcs.size() + 32 * partitions) /
                float(partitionOffsets.access(partitions));
     }
 
