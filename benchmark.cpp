@@ -16,7 +16,7 @@ size_t queries = 1e8;
 double lambda = 7.5;
 double tradeoff = 0.5;
 size_t partitionSize = 2048;
-std::string pilotencoderstrat = "dualmulti";
+std::string pilotencoderstrat = "dualinter";
 std::string pilotencoderbase = "c";
 std::string partitionencoderstrat = "diff";
 std::string partitionencoderbase = "c";
@@ -34,7 +34,7 @@ bool benchmark(const std::vector<keytype> &keys) {
     MPHFbuilder builder(conf);
     MPHF<pilotencoder, offsetencoder, hashfunction> f;
 
-    if constexpr (std::is_same<pilotencoder, multi_encoder_dual<rice, compact>>::value) {
+    if constexpr (std::is_same<pilotencoder, interleaved_encoder_dual<rice, compact>>::value) {
         f.getPilotEncoder().setEncoderTradeoff(tradeoff);
     }
 
@@ -203,11 +203,11 @@ bool dispatchPilotEncoderStrat() {
     if (pilotencoderstrat == "mono") {
         return dispatchPilotEncoderBase<mono_encoder<pilotbaseencoder>>();
     }
-    if (pilotencoderstrat == "multi") {
-        return dispatchPilotEncoderBase<multi_encoder<pilotbaseencoder>>();
+    if (pilotencoderstrat == "inter") {
+        return dispatchPilotEncoderBase<interleaved_encoder<pilotbaseencoder>>();
     }
-    if (pilotencoderstrat == "dualmulti") {
-        return dispatchPilotEncoderBase<multi_encoder_dual<rice, compact>>();
+    if (pilotencoderstrat == "dualinter") {
+        return dispatchPilotEncoderBase<interleaved_encoder_dual<rice, compact>>();
     }
     return false;
 }
