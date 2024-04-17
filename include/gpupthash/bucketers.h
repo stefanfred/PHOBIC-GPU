@@ -11,6 +11,7 @@ namespace gpupthash {
     public:
 
         virtual void init(double lambda, double expectedTableSize) {};
+
         virtual double getBucketRel(double relInput) const = 0;
 
         virtual ~Bucketer() {};
@@ -26,17 +27,14 @@ namespace gpupthash {
 
     class OptBucketer : public Bucketer {
     public:
-        static constexpr double local_collision_factor = 0.3;
-        double slope;
+        double c;
 
         void init(double lambda, double expectedTableSize) {
-            slope = std::max(
-                    0.05, std::min(1.0, local_collision_factor * lambda / std::sqrt(expectedTableSize)));
+            c = 0.2 * lambda / std::sqrt(expectedTableSize);
         }
 
         double getBucketRel(double relInput) const {
-            return std::max(relInput + (1 - relInput) * std::log(1 - relInput),
-                            slope * relInput);;
+            return (relInput + (1.0 - relInput) * std::log(1.0 - relInput)) * (1.0 - c) + c * relInput;
         }
     };
 
