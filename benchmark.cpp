@@ -200,11 +200,14 @@ bool dispatchEncoderBase(std::string basestring);
 
 template<typename pilotbaseencoder>
 bool dispatchPilotEncoderStrat() {
-    if (pilotencoderstrat == "mono") {
-        return dispatchEncoderBase<mono_encoder<pilotbaseencoder>>(partitionencoderbase);
-    }
-    if (pilotencoderstrat == "inter") {
-        return dispatchEncoderBase<interleaved_encoder<pilotbaseencoder>>(partitionencoderbase);
+    if constexpr (!std::is_same<pilotbaseencoder, void>::value) {
+        //requires base encoder
+        if (pilotencoderstrat == "mono") {
+            return dispatchEncoderBase<mono_encoder<pilotbaseencoder>>(partitionencoderbase);
+        }
+        if (pilotencoderstrat == "inter") {
+            return dispatchEncoderBase<interleaved_encoder<pilotbaseencoder>>(partitionencoderbase);
+        }
     }
     if (pilotencoderstrat == "dualinter") {
         return dispatchEncoderBase<interleaved_encoder_dual<rice, compact>>(partitionencoderbase);
@@ -228,8 +231,11 @@ bool dispatchEncoderBase(std::string basestring) {
     if (basestring == "d") { return dispatchDynamic<pilotencoderstrat, dictionary>(); }
     if (basestring == "r") { return dispatchDynamic<pilotencoderstrat, rice>(); }
     if (basestring == "sdc") { return dispatchDynamic<pilotencoderstrat, sdc>(); }
-    // workaround for dual, compact will be ignored
-    return dispatchDynamic<pilotencoderstrat, compact>();
+    // workaround for dual
+    if constexpr (std::is_same<pilotencoderstrat, void>::value) {
+        return dispatchDynamic<void, void>();
+    }
+    return false;
 }
 
 int main(int argc, char *argv[]) {
