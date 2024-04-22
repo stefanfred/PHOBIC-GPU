@@ -196,18 +196,18 @@ bool dispatchPartitionEncoderStrat() {
 }
 
 template<typename pilotencoderstrat>
-bool dispatchPilotEncoderBase();
+bool dispatchEncoderBase(std::string basestring);
 
 template<typename pilotbaseencoder>
 bool dispatchPilotEncoderStrat() {
     if (pilotencoderstrat == "mono") {
-        return dispatchPilotEncoderBase<mono_encoder<pilotbaseencoder>>();
+        return dispatchEncoderBase<mono_encoder<pilotbaseencoder>>(partitionencoderbase);
     }
     if (pilotencoderstrat == "inter") {
-        return dispatchPilotEncoderBase<interleaved_encoder<pilotbaseencoder>>();
+        return dispatchEncoderBase<interleaved_encoder<pilotbaseencoder>>(partitionencoderbase);
     }
     if (pilotencoderstrat == "dualinter") {
-        return dispatchPilotEncoderBase<interleaved_encoder_dual<rice, compact>>();
+        return dispatchEncoderBase<interleaved_encoder_dual<rice, compact>>(partitionencoderbase);
     }
     return false;
 }
@@ -222,12 +222,12 @@ bool dispatchDynamic() {
 }
 
 template<typename pilotencoderstrat>
-bool dispatchPilotEncoderBase() {
-    if (pilotencoderbase == "c") { return dispatchDynamic<pilotencoderstrat, compact>(); }
-    if (pilotencoderbase == "ef") { return dispatchDynamic<pilotencoderstrat, elias_fano>(); }
-    if (pilotencoderbase == "d") { return dispatchDynamic<pilotencoderstrat, dictionary>(); }
-    if (pilotencoderbase == "r") { return dispatchDynamic<pilotencoderstrat, rice>(); }
-    if (pilotencoderbase == "sdc") { return dispatchDynamic<pilotencoderstrat, sdc>(); }
+bool dispatchEncoderBase(std::string basestring) {
+    if (basestring == "c") { return dispatchDynamic<pilotencoderstrat, compact>(); }
+    if (basestring == "ef") { return dispatchDynamic<pilotencoderstrat, elias_fano>(); }
+    if (basestring == "d") { return dispatchDynamic<pilotencoderstrat, dictionary>(); }
+    if (basestring == "r") { return dispatchDynamic<pilotencoderstrat, rice>(); }
+    if (basestring == "sdc") { return dispatchDynamic<pilotencoderstrat, sdc>(); }
     // workaround for dual, compact will be ignored
     return dispatchDynamic<pilotencoderstrat, compact>();
 }
@@ -259,7 +259,7 @@ int main(int argc, char *argv[]) {
     bool valid = cmd.process(argc, argv);
     if(valid) {
         omp_set_num_threads(threads);
-        valid = dispatchPilotEncoderBase<void>();
+        valid = dispatchEncoderBase<void>(pilotencoderbase);
     }
     if (!valid) {
         cmd.print_usage();
