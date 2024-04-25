@@ -3,7 +3,7 @@
 #include "app/app.h"
 #include "app/command_buffer.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     struct PushStructBucketSort {
         uint32_t partitionMaxSize;

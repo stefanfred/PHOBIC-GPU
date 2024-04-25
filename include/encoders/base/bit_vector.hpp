@@ -7,7 +7,7 @@
 
 #include <essentials.hpp>
 
-namespace gpupthash {
+namespace phobicgpu {
 
 struct bit_vector_builder {
     bit_vector_builder(uint64_t size = 0, bool init = 0) : m_size(size) {
@@ -307,4 +307,4 @@ protected:
     std::vector<uint64_t> m_bits;
 };
 
-}  // namespace gpupthash
+}

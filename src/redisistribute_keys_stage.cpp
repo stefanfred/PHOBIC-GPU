@@ -1,6 +1,6 @@
-#include "gpupthash/redistribute_keys_stage.h"
+#include "phobicGpu/redistribute_keys_stage.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     RedistributeKeysStage::RedistributeKeysStage(App &app, uint32_t workGroupSize) : app(app),
                                                                                      workGroupSize(workGroupSize) {

@@ -4,7 +4,7 @@
 #include "app/command_buffer.h"
 #include <vector>
 
-namespace gpupthash {
+namespace phobicgpu {
 
     struct PrefixSumData {
     public:

@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-namespace gpupthash {
+namespace phobicgpu {
 
     class Bucketer {
     public:

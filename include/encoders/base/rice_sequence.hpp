@@ -8,7 +8,7 @@
 #include "compact_vector.hpp"
 
 
-namespace gpupthash {
+namespace phobicgpu {
     struct rice_sequence {
 
         template<typename Iterator>
@@ -76,4 +76,4 @@ namespace gpupthash {
         compact_vector m_low_bits;
     };
 
-}  // namespace pthash
+}

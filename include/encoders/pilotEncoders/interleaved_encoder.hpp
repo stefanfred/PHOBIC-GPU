@@ -1,6 +1,6 @@
 #pragma once
 
-namespace gpupthash {
+namespace phobicgpu {
 
     template<typename BaseEncoder>
     struct interleaved_encoder {

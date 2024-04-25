@@ -5,7 +5,7 @@
 #include "shader_constants.h"
 #include "mphf_config.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     struct PushStructSearch {
         uint32_t partitions;

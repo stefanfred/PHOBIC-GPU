@@ -2,7 +2,7 @@
 
 #include "encoders/base/encoders.hpp"
 
-namespace gpupthash {
+namespace phobicgpu {
 
 template <typename BaseEncoder>
 struct mono_encoder {
@@ -38,4 +38,4 @@ public:
         visitor.visit(enc);
     }
 };
-}  // namespace gpupthash
+}

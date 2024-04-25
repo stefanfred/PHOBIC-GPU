@@ -1,6 +1,6 @@
-#include "gpupthash/apply_partition_offset.h"
+#include "phobicGpu/apply_partition_offset.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     PartitionOffsetStage::PartitionOffsetStage(App &app, uint32_t workGroupSize, uint32_t bucketCountPerPartition)
             : app(

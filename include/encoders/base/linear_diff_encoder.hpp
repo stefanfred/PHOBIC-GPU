@@ -2,7 +2,7 @@
 
 #include "encoders.hpp"
 
-namespace gpupthash {
+namespace phobicgpu {
 
 template <typename BaseEncoder>
 struct linear_diff_encoder {
@@ -51,4 +51,4 @@ public:
         visitor.visit(enc);
     }
 };
-}  // namespace gpupthash
+}

@@ -4,7 +4,7 @@
 #include <immintrin.h>
 #endif
 
-namespace gpupthash::util {
+namespace phobicgpu::util {
 
 inline uint8_t msb(uint64_t x) {
     assert(x);
@@ -96,4 +96,4 @@ inline uint64_t select_in_word(const uint64_t x, const uint64_t k) {
     return select64(x, k);
 }
 
-}  // namespace gpupthash::util
+}

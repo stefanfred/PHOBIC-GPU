@@ -2,7 +2,7 @@
 
 #include "interleaved_encoder.hpp"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     template<typename BaseEncoder1, typename BaseEncoder2>
     struct interleaved_encoder_dual {
@@ -53,4 +53,4 @@ namespace gpupthash {
         interleaved_encoder <BaseEncoder1> encoder1;
         interleaved_encoder <BaseEncoder2> encoder2;
     };
-}  // namespace gpupthash
+}

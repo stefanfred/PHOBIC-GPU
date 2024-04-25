@@ -26,8 +26,8 @@ You can now run ```./BENCHMARK``` and supply your own configuration.
 Clone (with submodules) this repo and add the following to your `CMakeLists.txt`.
 
 ```
-add_subdirectory(path/to/GpuPTHash)
-target_link_libraries(YourTarget PRIVATE GpuPTHash)
+add_subdirectory(path/to/PHOBIC-GPU)
+target_link_libraries(YourTarget PRIVATE PHOBIC-GPU)
 ```
 
 An example on how to use the library can be found in ```example.cpp```

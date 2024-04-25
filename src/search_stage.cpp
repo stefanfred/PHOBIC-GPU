@@ -1,7 +1,7 @@
-#include "gpupthash/search_stage.h"
-#include "gpupthash/mphf_config.h"
+#include "phobicGpu/search_stage.h"
+#include "phobicGpu/mphf_config.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     SearchStage::SearchStage(App &app, uint32_t workGroupSize, MPHFconfig config) : app(app),
                                                                                     workGroupSize(workGroupSize) {

@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <cassert>
 
-namespace gpupthash {
+namespace phobicgpu {
 
 struct rice {
     template <typename Iterator>
@@ -279,4 +279,4 @@ private:
     sdc_sequence m_ranks;
     compact_vector m_dict;
 };
-}  // namespace gpupthash
+}

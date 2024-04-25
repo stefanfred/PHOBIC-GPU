@@ -7,7 +7,7 @@
 #include <iostream>
 #include <cstdint>
 
-using namespace gpupthash;
+using namespace phobicgpu;
 
 #define DO_NOT_OPTIMIZE(value) asm volatile("" : : "r,m"(value) : "memory")
 

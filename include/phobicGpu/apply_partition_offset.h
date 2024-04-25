@@ -3,7 +3,7 @@
 #include "app/app.h"
 #include "app/command_buffer.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     class PartitionOffsetStage {
     private:

@@ -2,7 +2,7 @@
 
 #include "encoders/base/encoders.hpp"
 
-namespace gpupthash {
+namespace phobicgpu {
 
 template <typename BaseEncoder>
 struct direct_partition_encoder {
@@ -36,4 +36,4 @@ public:
         visitor.visit(enc);
     }
 };
-}  // namespace gpupthash
+}

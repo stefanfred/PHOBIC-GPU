@@ -5,7 +5,7 @@
 
 #include <essentials.hpp>
 
-namespace gpupthash {
+namespace phobicgpu {
 
     struct compact_vector {
         template<typename Data>
@@ -288,4 +288,4 @@ namespace gpupthash {
         std::vector<uint64_t> m_bits;
     };
 
-}  // namespace pthash
+}

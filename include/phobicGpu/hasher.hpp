@@ -2,7 +2,7 @@
 
 #include "xxHash/xxh3.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     struct Key {
         uint32_t partitioner;
@@ -66,4 +66,4 @@ namespace gpupthash {
         }
     };
 
-}  // namespace pthash
+}

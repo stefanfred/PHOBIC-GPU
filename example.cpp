@@ -3,7 +3,7 @@
 // include all required gpuMPHF headers
 #include <gpuptmphf.hpp>
 
-using namespace gpupthash;
+using namespace phobicgpu;
 
 int main(int argc, char *argv[]) {
     std::cout.precision(3);
@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
     App::getInstance().printDebugInfo();
 
     // number of elements
-    size_t size = 1e7;
+    size_t size = 1e8;
 
     // create some input
     std::vector<std::string> keys;
@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     // the average bucket size tradeoffs construction time with space consumption
     // the partition size should be tuned for the particular hardware
     // the builder can be reused
-    MPHFbuilder builder(MPHFconfig(5.0f, 2048));
+    MPHFbuilder builder(MPHFconfig(4.5f, 2500));
 
     // the minimal perfect hash function
     // the templates are <pilot_encoding, partition_offset_encoding, initial_hash_function>

@@ -1,7 +1,7 @@
-#include "gpupthash/prefix_sum_stage.h"
+#include "phobicGpu/prefix_sum_stage.h"
 #include "app/utils.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     PrefixSumStage::PrefixSumStage(App &app, uint32_t workGroupSizeLocal, uint32_t workGroupSizeOffset) : app(app),
                                                                                                           workGroupSizeLocal(

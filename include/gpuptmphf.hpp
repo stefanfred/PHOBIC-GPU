@@ -10,14 +10,14 @@
 #include "encoders/partitionOffsetEnocders/diff_partition_offset_encoder.hpp"
 
 
-#include "gpupthash/mphf.hpp"
-#include "gpupthash/mphf_builder.h"
+#include "phobicGpu/mphf.hpp"
+#include "phobicGpu/mphf_builder.h"
 
-#include "gpupthash/hasher.hpp"
+#include "phobicGpu/hasher.hpp"
 
-namespace gpupthash {
+namespace phobicgpu {
 
-    typedef MPHF<interleaved_encoder<compact>, diff_partition_encoder<compact>, xxhash> FastMphf;
-    typedef MPHF<interleaved_encoder<rice>, diff_partition_encoder<compact>, xxhash> SmallMphf;
+    typedef MPHF<interleaved_encoder<compact>, diff_partition_encoder<compact>, xxhash> FastQueryMphf;
+    typedef MPHF<interleaved_encoder<rice>, diff_partition_encoder<compact>, xxhash> SmallSpaceMphf;
 
 }

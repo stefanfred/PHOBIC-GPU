@@ -3,7 +3,7 @@
 #include "app/app.h"
 #include "app/command_buffer.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     struct PushStructRedistributeKeys {
         uint32_t size;

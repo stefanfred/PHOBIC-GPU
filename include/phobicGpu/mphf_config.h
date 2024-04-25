@@ -11,7 +11,7 @@
 
 #include "bucketers.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     struct MPHFconfig {
     private:

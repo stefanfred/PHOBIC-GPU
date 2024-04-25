@@ -4,7 +4,7 @@
 #include "darray.hpp"
 #include "compact_vector.hpp"
 
-namespace gpupthash {
+namespace phobicgpu {
 
 template <bool encode_prefix_sum = false>
 struct ef_sequence {
@@ -92,4 +92,4 @@ private:
     compact_vector m_low_bits;
 };
 
-}  // namespace gpupthash
+}

@@ -1,6 +1,6 @@
-#include "gpupthash/bucket_sizes_stage.h"
+#include "phobicGpu/bucket_sizes_stage.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     BucketSizesStage::BucketSizesStage(App &app, uint32_t workGroupSize) : app(app), workGroupSize(workGroupSize) {
         bucketSizesStage = app.computeStage(

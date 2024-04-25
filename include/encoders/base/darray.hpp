@@ -3,7 +3,7 @@
 #include "util.hpp"
 #include "bit_vector.hpp"
 
-namespace gpupthash {
+namespace phobicgpu {
 namespace detail {
 
 template <typename WordGetter>
@@ -143,4 +143,4 @@ struct negating_getter {
 typedef detail::darray<detail::identity_getter> darray1;
 typedef detail::darray<detail::negating_getter> darray0;
 
-}  // namespace gpupthash
+}

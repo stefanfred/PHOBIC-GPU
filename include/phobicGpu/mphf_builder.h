@@ -12,7 +12,7 @@
 #include "search_stage.h"
 #include "mphf.hpp"
 
-namespace gpupthash {
+namespace phobicgpu {
 
 
     class MPHFbuilder {

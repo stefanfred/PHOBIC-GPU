@@ -1,6 +1,6 @@
-#include "gpupthash/bucket_sort_stage.h"
+#include "phobicGpu/bucket_sort_stage.h"
 
-namespace gpupthash {
+namespace phobicgpu {
 
     BucketSortStage::BucketSortStage(App &app, uint32_t bucketCountPerPartition, uint32_t sortingBins,
                                      uint32_t workGroupSize) : app(app) {

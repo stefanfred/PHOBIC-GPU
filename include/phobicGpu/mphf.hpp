@@ -10,7 +10,7 @@
 #include "fastmod/fastmod.h"
 #include "hasher.hpp"
 
-namespace gpupthash {
+namespace phobicgpu {
 
 template <typename PilotEncoder, typename PartitionOffsetEncoder, typename Hasher>
 class MPHF {
