@@ -1,6 +1,7 @@
 # PHOBIC-GPU
 
-A minimal perfect hash function construction technique on the GPU, based on the CPU implementation [PHOBIC](https://github.com/jermp/pthash).
+A minimal perfect hash function construction technique on the GPU, based on the CPU implementation 
+[PHOBIC](https://github.com/jermp/pthash/tree/phobic).
 
 If you use PHOBIC in an academic context please cite our paper *ToDo*.
 
