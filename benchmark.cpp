@@ -1,7 +1,7 @@
 #include <chrono>
 #include <tlx/cmdline_parser.hpp>
 
-#include <gpuptmphf.hpp>
+#include <phobic_gpu_mphf.hpp>
 #include <omp.h>
 #include <vector>
 #include <iostream>

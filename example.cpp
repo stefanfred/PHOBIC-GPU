@@ -1,7 +1,7 @@
 #include <chrono>
 
 // include all required gpuMPHF headers
-#include <gpuptmphf.hpp>
+#include <phobic_gpu_mphf.hpp>
 
 using namespace phobicgpu;
 

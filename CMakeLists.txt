@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.19)
 project(GpuPTHash LANGUAGES CXX)
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -43,7 +43,7 @@ function(add_shader TARGET SHADER)
 endfunction(add_shader)
 
 find_package(Vulkan REQUIRED)
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
 
 file(GLOB_RECURSE SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 add_library(GpuPTHash SHARED ${SOURCE_FILES})
