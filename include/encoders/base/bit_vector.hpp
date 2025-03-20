@@ -145,7 +145,7 @@ struct bit_vector_builder {
 private:
     std::vector<uint64_t> m_bits;
     uint64_t m_size;
-    uint64_t* m_cur_word;
+    uint64_t* m_cur_word = nullptr;
 };
 
 struct bit_vector {
