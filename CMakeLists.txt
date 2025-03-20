@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.19...3.31)
 project(GpuPTHash LANGUAGES CXX)
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -48,10 +48,10 @@ find_package(OpenMP REQUIRED)
 file(GLOB_RECURSE SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 add_library(GpuPTHash SHARED ${SOURCE_FILES})
 target_compile_features(GpuPTHash INTERFACE cxx_std_17)
-target_include_directories(GpuPTHash PUBLIC include)
+target_include_directories(GpuPTHash SYSTEM PUBLIC include)
 target_include_directories(GpuPTHash SYSTEM PUBLIC external)
 target_include_directories(GpuPTHash SYSTEM PUBLIC external/xxHash)
-target_include_directories(GpuPTHash PUBLIC ${Vulkan_INCLUDE_DIRS})
+target_include_directories(GpuPTHash SYSTEM PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(GpuPTHash PUBLIC Vulkan::Vulkan)
 target_link_libraries(GpuPTHash PUBLIC OpenMP::OpenMP_CXX)
 
