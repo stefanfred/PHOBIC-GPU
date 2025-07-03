@@ -3,7 +3,7 @@
 A minimal perfect hash function construction technique on the GPU, based on the CPU implementation 
 [PHOBIC](https://github.com/jermp/pthash/tree/phobic).
 
-If you use PHOBIC in an academic context please cite our [paper](https://arxiv.org/pdf/2404.18497).
+If you use PHOBIC in an academic context please cite our [paper](https://arxiv.org/abs/2404.18497).
 
 ### Requirements
 PHOBIC-GPU requires Vulkan.
